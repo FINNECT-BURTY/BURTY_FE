@@ -23,6 +23,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Import 규칙
 
+- import 정렬은 ESLint의 `simple-import-sort` 규칙을 따른다.
+- 정렬 순서는 side effect import, Node 내장 모듈, 외부 패키지, `@/` 내부 alias, 상대경로, 스타일 import 순서다.
+- 타입 전용 import는 가능한 `import type`을 사용한다.
+
 - TypeScript/React 코드 import는 기본적으로 `@/` 절대경로 alias를 사용한다.
 
 ```ts
