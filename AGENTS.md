@@ -64,10 +64,23 @@ src: "@/public/icons/icon-192x192.png";
 - `app/`은 Next 라우트, 레이아웃, 전역 provider, 앱 초기화만 담당한다. route/page/layout 파일은 얇게 유지한다.
 - 사용자 흐름과 제품 기능은 `features/<feature-name>/` 아래에 둔다. 예: `features/onboarding/`.
 - feature 내부 화면 컴포넌트는 `features/<feature-name>/components/`에 둔다.
+- feature 내부 퍼널 단계 컴포넌트는 `features/<feature-name>/steps/`에 둔다.
+- feature 안에서만 재사용되는 작은 UI는 `features/<feature-name>/ui/`에 둔다.
+- feature 정적 설정과 문항 데이터는 `features/<feature-name>/constants/`에 둔다.
 - feature의 공개 진입점은 `features/<feature-name>/index.ts`로 둔다. app에서는 가능하면 이 공개 진입점을 import한다.
 - `shared/`에는 도메인과 무관한 재사용 UI, layout, lib, config, constants만 둔다.
 - 도메인에 종속된 코드를 `shared/`에 넣지 않는다.
 - 큰 `utils/` 폴더를 만들지 않는다. 유틸은 목적과 소유 도메인이 드러나는 위치에 둔다.
+
+## 파일명
+
+- React 컴포넌트 파일은 PascalCase를 사용한다. 예: `OnboardingEntry.tsx`, `MobileAppShell.tsx`.
+- React 컴포넌트 이름도 파일명과 같은 PascalCase를 사용한다.
+- feature 공개 진입점은 `index.ts`를 사용한다.
+- Next App Router 예약 파일은 Next 파일 컨벤션을 따른다. 예: `page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, `manifest.ts`.
+- 브라우저 URL로 직접 접근되는 public asset 파일은 기존 파일명 또는 kebab-case를 사용한다.
+- 일반 TypeScript 파일은 camelCase를 사용한다. 예: `onboardingSteps.ts`.
+- 폴더명은 소문자 kebab-case를 사용한다. 예: `features/onboarding/`.
 
 ## 컴포넌트와 상태
 
@@ -99,6 +112,8 @@ sub-background    #e8e8e8  보조 배경
 foreground        #1a1c1c  메인 텍스트
 sub-foreground    #444748  보조 텍스트
 logo-placeholder  #d8d8d8  로고/이미지 자리 표시 배경
+border            #c8caca  기본 테두리
+muted-foreground  #9a9d9d  약한 보조 텍스트
 ```
 
 - 새 색상이 필요하면 먼저 토큰으로 추가할지 검토하고, 임의 hex 값을 컴포넌트에 흩뿌리지 않는다.
