@@ -10,7 +10,7 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     orientation: "portrait",
     background_color: "#ffffff",
-    theme_color: "#FFEDA8",
+    theme_color: "#181919",
     // TODO: 아이콘 추가
     icons: [
       {
