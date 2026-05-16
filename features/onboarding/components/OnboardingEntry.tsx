@@ -1,14 +1,13 @@
-import Link from "next/link";
-import { Apple, MessageSquare } from "lucide-react";
+import Image from "next/image";
 
 type OnboardingEntryProps = Readonly<{
   onStart: () => void;
 }>;
 
-const mainButtonClassName =
-  "text-body-md flex h-11 w-full items-center justify-center rounded-lg bg-grayscale-1000 px-6 text-background";
-const socialButtonClassName =
-  "text-body-md flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-grayscale-200 bg-background px-6 text-grayscale-1000 transition-colors active:bg-grayscale-100";
+const naverButtonClassName =
+  "text-title-sm flex h-13 w-full items-center justify-center gap-3 rounded-2xl bg-[#03c75a] px-6 text-[#FFFFFF]";
+const googleButtonClassName =
+  "text-title-sm flex h-13 w-full items-center justify-center gap-3 rounded-2xl bg-background px-6 text-grayscale-1000 shadow-[0_1px_8px_rgba(30,30,30,0.04)]";
 
 export function OnboardingEntry({ onStart }: OnboardingEntryProps) {
   return (
@@ -17,55 +16,45 @@ export function OnboardingEntry({ onStart }: OnboardingEntryProps) {
         <h1 className="text-display text-grayscale-1000">
           이번 달, 괜찮을까요?
         </h1>
-        <p className="text-body-lg mt-1 text-grayscale-900">
+        <p className="text-body-lg mt-1 text-grayscale-800">
           버티가 미리 알려드릴게요
         </p>
       </section>
 
-      <div className="text-body-lg mx-auto mt-6 flex aspect-square w-[200px] items-center justify-center rounded-2xl border border-grayscale-200 bg-grayscale-200 text-grayscale-900">
+      <div className="text-body-lg mx-auto mt-6 flex aspect-square w-[200px] items-center justify-center rounded-3xl bg-[#eeeeee] text-grayscale-900">
         로고
       </div>
 
-      <div className="mt-10 flex flex-col gap-3">
+      <div className="mt-10 flex flex-col gap-4">
         <button
-          className={mainButtonClassName}
+          className={naverButtonClassName}
           onClick={onStart}
           type="button"
         >
-          시작하기
-        </button>
-        <button className={socialButtonClassName} type="button">
-          <MessageSquare aria-hidden="true" size={16} strokeWidth={1.5} />
-          카카오로 계속하기
-        </button>
-        <button className={socialButtonClassName} type="button">
-          <Apple
+          <Image
+            alt=""
             aria-hidden="true"
-            size={16}
-            fill="currentColor"
-            strokeWidth={2}
+            height={16}
+            src="/icons/onboarding/logo-naver.svg"
+            width={16}
           />
-          Apple로 계속하기
+          네이버 로그인
+        </button>
+        <button
+          className={googleButtonClassName}
+          onClick={onStart}
+          type="button"
+        >
+          <Image
+            alt=""
+            aria-hidden="true"
+            height={16}
+            src="/icons/onboarding/logo-google.svg"
+            width={16}
+          />
+          Continue with Google
         </button>
       </div>
-      {/* TODO: 로그인, 개인정보 처리방침, 이용약관 페이지 추가 */}
-      <Link
-        href="/login"
-        className="text-caption mt-2 text-center text-grayscale-900"
-      >
-        이미 계정이 있어요? 로그인
-      </Link>
-
-      <footer className="mt-auto pt-6 text-center">
-        <div className="text-caption flex items-center justify-center gap-5 text-grayscale-900">
-          <Link href="/privacy">개인정보 처리방침</Link>
-          <span className="h-4 w-px bg-grayscale-200" />
-          <Link href="/terms">이용약관</Link>
-        </div>
-        <p className="mt-3 text-[9px] font-medium tracking-normal text-grayscale-700">
-          © 2026 BERTY, KNOWLEDGEABLE YET APPROACHABLE.
-        </p>
-      </footer>
     </main>
   );
 }

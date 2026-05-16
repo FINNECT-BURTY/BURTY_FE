@@ -7,7 +7,7 @@ import { ONBOARDING_STEPS } from "@/features/onboarding/constants/onboardingStep
 import { OnboardingQuestionStep } from "@/features/onboarding/steps/OnboardingQuestionStep";
 
 type OnboardingFunnelProps = Readonly<{
-  onBackToEntry: () => void;
+  onBackToAgreement: () => void;
 }>;
 
 type OnboardingStepId = (typeof ONBOARDING_STEPS)[number]["id"];
@@ -26,7 +26,7 @@ function getStepIndex(stepIndex: number, totalSteps: number) {
   return Math.min(Math.max(stepIndex, 0), totalSteps - 1);
 }
 
-export function OnboardingFunnel({ onBackToEntry }: OnboardingFunnelProps) {
+export function OnboardingFunnel({ onBackToAgreement }: OnboardingFunnelProps) {
   const [view, setView] = useState<OnboardingView>({
     type: "questions",
     stepIndex: 0,
@@ -36,7 +36,11 @@ export function OnboardingFunnel({ onBackToEntry }: OnboardingFunnelProps) {
   const totalSteps = Number(ONBOARDING_STEPS.length);
 
   if (view.type === "connection") {
-    return <OnboardingConnectionScreen />;
+    return (
+      <OnboardingConnectionScreen
+        onBack={() => setView({ type: "questions", stepIndex: totalSteps - 1 })}
+      />
+    );
   }
 
   const currentStepIndex = getStepIndex(view.stepIndex, totalSteps);
@@ -45,7 +49,7 @@ export function OnboardingFunnel({ onBackToEntry }: OnboardingFunnelProps) {
 
   const handleBack = () => {
     if (view.stepIndex === 0) {
-      onBackToEntry();
+      onBackToAgreement();
       return;
     }
 

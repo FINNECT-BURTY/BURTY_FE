@@ -13,7 +13,7 @@ export function OnboardingHeader({
   rightSlot,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center border-b border-grayscale-100 bg-background px-6">
+    <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center bg-background px-6">
       <div className="flex w-9 shrink-0 justify-start">
         {onBack ? (
           <button
@@ -32,7 +32,7 @@ export function OnboardingHeader({
           </button>
         ) : null}
       </div>
-      <div className="text-title-sm min-w-0 flex-1 truncate text-center text-grayscale-1000">
+      <div className="text-title-md min-w-0 flex-1 truncate text-center text-grayscale-1000">
         {title}
       </div>
       <div className="flex w-9 shrink-0 justify-end">{rightSlot}</div>

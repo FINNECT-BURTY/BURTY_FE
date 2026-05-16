@@ -23,20 +23,17 @@ export function OnboardingProgressBar({
   const progress = getProgress(currentStep, totalSteps);
 
   return (
-    <section className="px-6 pt-6">
-      <p className="text-caption text-grayscale-900">
-        {progress.current} / {progress.total}
-      </p>
+    <section className="px-6">
       <div
         aria-label="온보딩 진행률"
         aria-valuemax={progress.total}
         aria-valuemin={0}
         aria-valuenow={progress.current}
-        className="mt-2 h-1 rounded-full bg-grayscale-100"
+        className="h-1.5 rounded-lg bg-grayscale-100"
         role="progressbar"
       >
         <div
-          className="h-1 rounded-full bg-grayscale-1000"
+          className="h-1.5 rounded-lg bg-yellow-400"
           style={{ width: progress.width }}
         />
       </div>
