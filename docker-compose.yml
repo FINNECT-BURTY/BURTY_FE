@@ -1,0 +1,28 @@
+services:
+  burty-fe:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: burty-fe:latest
+    container_name: burty-fe
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      NODE_ENV: production
+      VIRTUAL_HOST: ${VIRTUAL_HOST:-www.burty.co.kr,burty.co.kr}
+      VIRTUAL_PORT: "3000"
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST:-www.burty.co.kr,burty.co.kr}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:-admin@burty.kr}
+    networks:
+      - global-nginx
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  global-nginx:
+    external: true
