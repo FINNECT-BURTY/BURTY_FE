@@ -24,7 +24,7 @@ export function OnboardingProgressBar({
 
   return (
     <section className="px-6 pt-6">
-      <p className="text-xs font-medium text-sub-foreground">
+      <p className="text-caption text-grayscale-900">
         {progress.current} / {progress.total}
       </p>
       <div
@@ -32,11 +32,11 @@ export function OnboardingProgressBar({
         aria-valuemax={progress.total}
         aria-valuemin={0}
         aria-valuenow={progress.current}
-        className="mt-2 h-1 rounded-full bg-sub-background"
+        className="mt-2 h-1 rounded-full bg-grayscale-100"
         role="progressbar"
       >
         <div
-          className="h-1 rounded-full bg-primary"
+          className="h-1 rounded-full bg-grayscale-1000"
           style={{ width: progress.width }}
         />
       </div>

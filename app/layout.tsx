@@ -44,7 +44,7 @@ export default function RootLayout({
       lang="ko"
       className={`${pretendard.variable} antialiased`}
     >
-      <body className="min-h-dvh bg-sub-background text-foreground">
+      <body className="min-h-dvh bg-background text-grayscale-1000">
         <PwaRegister />
         <MobileAppShell>{children}</MobileAppShell>
       </body>

@@ -103,20 +103,31 @@ src: "@/public/icons/icon-192x192.png";
 
 - 기존 Tailwind CSS 패턴을 따른다.
 - 기본 색상은 `app/globals.css`의 CSS 변수와 Tailwind theme token을 사용한다.
-- 색상 토큰은 다음 의미로 사용한다.
+- 색상 토큰은 디자인 가이드에 정의된 다음 토큰만 사용한다.
 
 ```txt
-background        #ffffff  기본 화면 배경
-primary           #181919  메인 컬러
-sub-background    #e8e8e8  보조 배경
-foreground        #1a1c1c  메인 텍스트
-sub-foreground    #444748  보조 텍스트
-logo-placeholder  #d8d8d8  로고/이미지 자리 표시 배경
-border            #c8caca  기본 테두리
-muted-foreground  #9a9d9d  약한 보조 텍스트
+background      #fcfcfc
+grayscale-1000  #1e1e1e
+grayscale-900   #474747
+grayscale-800   #5b5b5b
+grayscale-700   #707070
+grayscale-600   #848484
+grayscale-500   #989898
+grayscale-400   #adadad
+grayscale-300   #c1c1c1
+grayscale-200   #d6d6d6
+grayscale-100   #eaeaea
+espresso        #301c1b
+yellow-500      #d7c05c
+yellow-400      #f4dc70
+yellow-300      #ffed9e
+yellow-200      #fff5c8
+yellow-100      #fffcf1
 ```
 
 - 새 색상이 필요하면 먼저 토큰으로 추가할지 검토하고, 임의 hex 값을 컴포넌트에 흩뿌리지 않는다.
+- 텍스트 스타일은 전역 타입 클래스 `text-display`, `text-title-lg`, `text-title-md`, `text-title-sm`, `text-body-lg`, `text-body-md`, `text-caption`을 우선 사용한다.
+- 타입 스타일은 디자인 가이드의 font-size, font-weight, line-height 기준을 따른다.
 - 반복되는 스타일은 필요할 때만 컴포넌트화한다.
 - 화면 텍스트가 모바일에서 넘치거나 겹치지 않도록 확인한다.
 - 버튼, 링크, 입력, 로딩, 비활성 상태를 누락하지 않는다.

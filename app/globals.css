@@ -1,31 +1,104 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --primary: #181919;
-  --sub-background: #e8e8e8;
-  --foreground: #1a1c1c;
-  --sub-foreground: #444748;
-  --logo-placeholder: #d8d8d8;
-  --border: #c8caca;
-  --muted-foreground: #9a9d9d;
+  --grayscale-1000: #1e1e1e;
+  --grayscale-900: #474747;
+  --grayscale-800: #5b5b5b;
+  --grayscale-700: #707070;
+  --grayscale-600: #848484;
+  --grayscale-500: #989898;
+  --grayscale-400: #adadad;
+  --grayscale-300: #c1c1c1;
+  --grayscale-200: #d6d6d6;
+  --grayscale-100: #eaeaea;
+
+  --espresso: #301c1b;
+
+  --yellow-500: #d7c05c;
+  --yellow-400: #f4dc70;
+  --yellow-300: #ffed9e;
+  --yellow-200: #fff5c8;
+  --yellow-100: #fffcf1;
+
+  --background: #fcfcfc;
 }
 
 @theme inline {
+  --color-grayscale-1000: var(--grayscale-1000);
+  --color-grayscale-900: var(--grayscale-900);
+  --color-grayscale-800: var(--grayscale-800);
+  --color-grayscale-700: var(--grayscale-700);
+  --color-grayscale-600: var(--grayscale-600);
+  --color-grayscale-500: var(--grayscale-500);
+  --color-grayscale-400: var(--grayscale-400);
+  --color-grayscale-300: var(--grayscale-300);
+  --color-grayscale-200: var(--grayscale-200);
+  --color-grayscale-100: var(--grayscale-100);
+
+  --color-espresso: var(--espresso);
+
+  --color-yellow-500: var(--yellow-500);
+  --color-yellow-400: var(--yellow-400);
+  --color-yellow-300: var(--yellow-300);
+  --color-yellow-200: var(--yellow-200);
+  --color-yellow-100: var(--yellow-100);
+
   --color-background: var(--background);
-  --color-primary: var(--primary);
-  --color-sub-background: var(--sub-background);
-  --color-foreground: var(--foreground);
-  --color-sub-foreground: var(--sub-foreground);
-  --color-logo-placeholder: var(--logo-placeholder);
-  --color-border: var(--border);
-  --color-muted-foreground: var(--muted-foreground);
+
   --font-sans: var(--font-pretendard);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
+  color: var(--grayscale-1000);
   font-family: var(--font-pretendard), Arial, Helvetica, sans-serif;
+}
+
+.text-display {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 140%;
+  letter-spacing: -0.22px;
+}
+
+.text-title-lg {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 140%;
+  letter-spacing: -0.4px;
+}
+
+.text-title-md {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 140%;
+  letter-spacing: -0.36px;
+}
+
+.text-title-sm {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 140%;
+  letter-spacing: -0.32px;
+}
+
+.text-body-lg {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 150%;
+  letter-spacing: -0.32px;
+}
+
+.text-body-md {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 150%;
+  letter-spacing: -0.28px;
+}
+
+.text-caption {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 150%;
+  letter-spacing: -0.24px;
 }

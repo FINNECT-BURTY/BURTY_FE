@@ -51,7 +51,7 @@ export function BottomNavigation() {
   return (
     <nav
       aria-label="하단 내비게이션"
-      className="grid h-18 shrink-0 grid-cols-5 border-t border-sub-background bg-background px-2 pb-[env(safe-area-inset-bottom)]"
+      className="grid h-18 shrink-0 grid-cols-5 border-t border-grayscale-100 bg-background px-2 pb-[env(safe-area-inset-bottom)]"
     >
       {bottomNavigationItems.map(
         ({ label, href, activeIconSrc, defaultIconSrc }) => {
@@ -61,7 +61,7 @@ export function BottomNavigation() {
           return (
             <Link
               aria-current={isActive ? "page" : undefined}
-              className="flex min-w-0 flex-col items-center justify-center gap-1.5 text-xs font-medium"
+              className="text-caption flex min-w-0 flex-col items-center justify-center gap-1.5"
               href={href}
               key={href}
             >
@@ -74,7 +74,9 @@ export function BottomNavigation() {
                 width={24}
               />
               <span
-                className={isActive ? "text-primary" : "text-sub-foreground"}
+                className={
+                  isActive ? "text-grayscale-1000" : "text-grayscale-700"
+                }
               >
                 {label}
               </span>
