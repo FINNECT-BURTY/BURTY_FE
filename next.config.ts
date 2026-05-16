@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /**
+   * 배포 이미지는 standalone 산출물로 뜬다.
+   *
+   * <p>Dockerfile 이 .next/standalone 을 복사해 node server.js 로 실행한다. 쓰이지 않는
+   * 설정처럼 보여도 지우면 이미지가 뜨지 않는다.
+   */
+  output: "standalone",
+
+  /**
    * 로컬 백엔드로 API 를 프록시한다.
    *
    * <p>{@code BURTY_API_PROXY_TARGET} 이 있을 때만 켠다. 브라우저에서 3200 → 8090 으로
