@@ -4,7 +4,7 @@ export function MobileAppShell({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[430px] flex-col bg-background shadow-sm">
+    <div className="mx-auto flex h-dvh w-full max-w-[430px] flex-col overflow-hidden bg-background shadow-sm">
       {children}
     </div>
   );

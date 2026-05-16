@@ -1,8 +1,6 @@
-import { CircleCheck } from "lucide-react";
-
 import type { OnboardingStep } from "@/features/onboarding/constants/onboardingSteps";
 import { OnboardingProgressBar } from "@/features/onboarding/ui/OnboardingProgressBar";
-import { Header } from "@/shared/layout/Header";
+import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
 
 type OnboardingQuestionStepProps = Readonly<{
   step: OnboardingStep;
@@ -14,10 +12,23 @@ type OnboardingQuestionStepProps = Readonly<{
   onSelect: (value: string) => void;
 }>;
 
-const optionButtonClassName =
-  "flex h-18 items-center justify-between rounded-xl px-6 text-left text-base font-medium";
-const selectedOptionButtonClassName = `${optionButtonClassName} border-2 border-primary bg-sub-background text-primary`;
-const unselectedOptionButtonClassName = `${optionButtonClassName} border border-border bg-background text-foreground`;
+function getGridClassName(optionCount: number) {
+  if (optionCount > 2) {
+    return "grid grid-cols-2 gap-3";
+  }
+
+  return "grid grid-cols-2 gap-4";
+}
+
+function getOptionClassName(selected: boolean) {
+  const baseClassName =
+    "text-title-md flex h-40 items-center justify-center rounded-3xl text-center shadow-[0_2px_12px_rgba(30,30,30,0.04)]";
+  const stateClassName = selected
+    ? "bg-yellow-300 text-grayscale-1000"
+    : "bg-background text-grayscale-900";
+
+  return `${baseClassName} ${stateClassName}`;
+}
 
 export function OnboardingQuestionStep({
   step,
@@ -29,44 +40,38 @@ export function OnboardingQuestionStep({
   onSelect,
 }: OnboardingQuestionStepProps) {
   return (
-    <main className="flex min-h-dvh flex-1 flex-col bg-background text-foreground">
-      <Header onBack={onBack} />
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
+      <OnboardingHeader
+        onBack={onBack}
+        rightSlot={
+          <span className="text-body-md text-grayscale-900">
+            {currentStep}/{totalSteps}
+          </span>
+        }
+        title="시작하기"
+      />
       <OnboardingProgressBar currentStep={currentStep} totalSteps={totalSteps} />
 
-      <section className="px-6 pt-12">
-        <h1 className="text-2xl font-semibold leading-8 text-primary">
-          {step.title}
-        </h1>
-        <p className="mt-2 text-sm font-medium text-sub-foreground">
+      <section className="px-6 pt-7">
+        <h1 className="text-title-lg text-grayscale-1000">{step.title}</h1>
+        <p className="text-body-md mt-1 text-grayscale-900">
           {step.description}
         </p>
       </section>
 
-      <section className="mt-10 flex flex-col gap-3 px-6">
+      <section className={`mt-6 px-5 ${getGridClassName(step.options.length)}`}>
         {step.options.map((option) => {
           const selected = option.value === selectedValue;
 
           return (
             <button
               aria-pressed={selected}
-              className={
-                selected
-                  ? selectedOptionButtonClassName
-                  : unselectedOptionButtonClassName
-              }
+              className={getOptionClassName(selected)}
               key={option.value}
               onClick={() => onSelect(option.value)}
               type="button"
             >
               {option.label}
-              {selected ? (
-                <CircleCheck
-                  aria-hidden="true"
-                  className="text-primary"
-                  size={20}
-                  strokeWidth={2}
-                />
-              ) : null}
             </button>
           );
         })}
@@ -74,11 +79,11 @@ export function OnboardingQuestionStep({
 
       <footer className="mt-auto px-6 pb-[max(24px,env(safe-area-inset-bottom))] pt-8">
         <button
-          className="flex h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-medium text-background"
+          className="text-title-sm flex h-13 w-full items-center justify-center rounded-2xl bg-yellow-400 text-grayscale-1000"
           onClick={onNext}
           type="button"
         >
-          다음
+          {currentStep === totalSteps ? "확인" : "다음"}
         </button>
       </footer>
     </main>

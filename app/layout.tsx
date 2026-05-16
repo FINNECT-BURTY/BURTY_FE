@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
-import { PwaRegister } from "@/app/pwa-register";
 import { MobileAppShell } from "@/shared/layout/MobileAppShell";
+import { PwaRegister } from "@/shared/pwa/PwaRegister";
 
 import "./globals.css";
 
@@ -44,7 +44,7 @@ export default function RootLayout({
       lang="ko"
       className={`${pretendard.variable} antialiased`}
     >
-      <body className="min-h-dvh bg-sub-background text-foreground">
+      <body className="min-h-dvh bg-background text-grayscale-1000">
         <PwaRegister />
         <MobileAppShell>{children}</MobileAppShell>
       </body>

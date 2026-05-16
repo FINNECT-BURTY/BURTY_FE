@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#ffffff",
+    background_color: "#fcfcfc",
     theme_color: "#181919",
     // TODO: 아이콘 추가
     icons: [
