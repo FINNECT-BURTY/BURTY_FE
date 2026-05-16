@@ -7,7 +7,7 @@ type HeaderProps = Readonly<{
   rightSlot?: ReactNode;
 }>;
 
-export function Header({ title = "Berty", onBack, rightSlot }: HeaderProps) {
+export function OnboardingHeader({ title = "Berty", onBack, rightSlot }: HeaderProps) {
   return (
     <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center border-b border-sub-background bg-background px-6">
       <div className="flex w-9 shrink-0 justify-start">

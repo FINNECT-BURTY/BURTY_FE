@@ -2,7 +2,8 @@ import { CircleCheck } from "lucide-react";
 
 import type { OnboardingStep } from "@/features/onboarding/constants/onboardingSteps";
 import { OnboardingProgressBar } from "@/features/onboarding/ui/OnboardingProgressBar";
-import { Header } from "@/shared/layout/Header";
+import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
+
 
 type OnboardingQuestionStepProps = Readonly<{
   step: OnboardingStep;
@@ -30,7 +31,7 @@ export function OnboardingQuestionStep({
 }: OnboardingQuestionStepProps) {
   return (
     <main className="flex min-h-dvh flex-1 flex-col bg-background text-foreground">
-      <Header onBack={onBack} />
+      <OnboardingHeader onBack={onBack} />
       <OnboardingProgressBar currentStep={currentStep} totalSteps={totalSteps} />
 
       <section className="px-6 pt-12">
