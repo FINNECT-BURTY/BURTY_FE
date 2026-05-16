@@ -102,3 +102,13 @@ body {
   line-height: 150%;
   letter-spacing: -0.24px;
 }
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-loading-spin {
+  animation: loading-spin 1.4s linear infinite;
+}

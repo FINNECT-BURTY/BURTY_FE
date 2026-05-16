@@ -1,5 +1,5 @@
+import Image from "next/image";
 import type { ReactNode } from "react";
-import { ArrowLeft } from "lucide-react";
 
 type HeaderProps = Readonly<{
   title?: string;
@@ -22,7 +22,13 @@ export function OnboardingHeader({
             onClick={onBack}
             type="button"
           >
-            <ArrowLeft aria-hidden="true" size={22} strokeWidth={2} />
+            <Image
+              alt=""
+              aria-hidden="true"
+              height={24}
+              src="/icons/header/back-arrow.svg"
+              width={24}
+            />
           </button>
         ) : null}
       </div>

@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
-import { PwaRegister } from "@/app/pwa-register";
 import { MobileAppShell } from "@/shared/layout/MobileAppShell";
+import { PwaRegister } from "@/shared/pwa/PwaRegister";
 
 import "./globals.css";
 
