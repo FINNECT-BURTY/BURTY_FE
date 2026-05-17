@@ -3,10 +3,6 @@
 import Image from "next/image";
 import { useState } from "react";
 
-type OnboardingEntryProps = Readonly<{
-  onStart: () => void;
-}>;
-
 type SocialAuthorizeUrlResponse = Readonly<{
   success: boolean;
   message: string;
@@ -17,10 +13,41 @@ type SocialAuthorizeUrlResponse = Readonly<{
   errorCode?: string | null;
 }>;
 
+type SocialProvider = "kakao" | "google" | "naver";
+
+type SocialProviderConfig = Readonly<{
+  label: string;
+  loadingLabel: string;
+  iconSrc?: string;
+  buttonClassName: string;
+}>;
+
 const kakaoButtonClassName =
   "text-title-sm flex h-13 w-full items-center justify-center rounded-2xl bg-[#fee500] px-6 text-grayscale-1000 disabled:opacity-70";
 const googleButtonClassName =
-  "text-title-sm flex h-13 w-full items-center justify-center gap-3 rounded-2xl bg-background px-6 text-grayscale-1000 shadow-[0_1px_8px_rgba(30,30,30,0.04)]";
+  "text-title-sm flex h-13 w-full items-center justify-center gap-3 rounded-2xl border border-grayscale-200 bg-background px-6 text-grayscale-1000 shadow-[0_1px_8px_rgba(30,30,30,0.04)] disabled:opacity-70";
+const naverButtonClassName =
+  "text-title-sm flex h-13 w-full items-center justify-center gap-3 rounded-2xl bg-[#03c75a] px-6 text-white disabled:opacity-70";
+
+const SOCIAL_PROVIDERS: Record<SocialProvider, SocialProviderConfig> = {
+  kakao: {
+    label: "카카오 로그인",
+    loadingLabel: "카카오 로그인 중...",
+    buttonClassName: kakaoButtonClassName,
+  },
+  google: {
+    label: "Google 로그인",
+    loadingLabel: "Google 로그인 중...",
+    iconSrc: "/icons/onboarding/logo-google.svg",
+    buttonClassName: googleButtonClassName,
+  },
+  naver: {
+    label: "네이버 로그인",
+    loadingLabel: "네이버 로그인 중...",
+    iconSrc: "/icons/onboarding/logo-naver.svg",
+    buttonClassName: naverButtonClassName,
+  },
+};
 
 function createOAuthState() {
   if (window.crypto.randomUUID) {
@@ -30,25 +57,28 @@ function createOAuthState() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function OnboardingEntry({ onStart }: OnboardingEntryProps) {
-  const [isKakaoLoading, setIsKakaoLoading] = useState(false);
+export function OnboardingEntry() {
+  const [loadingProvider, setLoadingProvider] = useState<SocialProvider | null>(
+    null,
+  );
   const [loginErrorMessage, setLoginErrorMessage] = useState("");
 
-  const handleKakaoLogin = async () => {
-    setIsKakaoLoading(true);
+  const handleSocialLogin = async (provider: SocialProvider) => {
+    const providerConfig = SOCIAL_PROVIDERS[provider];
+    setLoadingProvider(provider);
     setLoginErrorMessage("");
 
     try {
       const state = createOAuthState();
-      window.sessionStorage.setItem("burty:kakao-oauth-state", state);
+      window.sessionStorage.setItem(`burty:${provider}-oauth-state`, state);
 
       const params = new URLSearchParams({ state });
       const response = await fetch(
-        `/api/auth/social/KAKAO/authorize-url?${params.toString()}`,
+        `/api/auth/${provider}/authorize-url?${params.toString()}`,
       );
 
       if (!response.ok) {
-        throw new Error("Failed to create Kakao authorize URL.");
+        throw new Error(`Failed to create ${provider} authorize URL.`);
       }
 
       const result = (await response.json()) as SocialAuthorizeUrlResponse;
@@ -60,9 +90,11 @@ export function OnboardingEntry({ onStart }: OnboardingEntryProps) {
 
       window.location.href = authorizeUrl;
     } catch (error) {
-      console.error("Kakao login failed:", error);
-      setLoginErrorMessage("카카오 로그인을 시작하지 못했어요. 다시 시도해주세요.");
-      setIsKakaoLoading(false);
+      console.error(`${provider} login failed:`, error);
+      setLoginErrorMessage(
+        `${providerConfig.label}을 시작하지 못했어요. 다시 시도해주세요.`,
+      );
+      setLoadingProvider(null);
     }
   };
 
@@ -82,28 +114,30 @@ export function OnboardingEntry({ onStart }: OnboardingEntryProps) {
       </div>
 
       <div className="mt-10 flex flex-col gap-4">
-        <button
-          className={kakaoButtonClassName}
-          disabled={isKakaoLoading}
-          onClick={handleKakaoLogin}
-          type="button"
-        >
-          {isKakaoLoading ? "카카오 로그인 중..." : "카카오 로그인"}
-        </button>
-        <button
-          className={googleButtonClassName}
-          onClick={onStart}
-          type="button"
-        >
-          <Image
-            alt=""
-            aria-hidden="true"
-            height={16}
-            src="/icons/onboarding/logo-google.svg"
-            width={16}
-          />
-          Continue with Google
-        </button>
+        {(["kakao", "google", "naver"] as const).map((provider) => {
+          const providerConfig = SOCIAL_PROVIDERS[provider];
+          const isLoading = loadingProvider === provider;
+          return (
+            <button
+              className={providerConfig.buttonClassName}
+              disabled={loadingProvider !== null}
+              key={provider}
+              onClick={() => handleSocialLogin(provider)}
+              type="button"
+            >
+              {providerConfig.iconSrc ? (
+                <Image
+                  alt=""
+                  aria-hidden="true"
+                  height={16}
+                  src={providerConfig.iconSrc}
+                  width={16}
+                />
+              ) : null}
+              {isLoading ? providerConfig.loadingLabel : providerConfig.label}
+            </button>
+          );
+        })}
         {loginErrorMessage ? (
           <p className="text-caption text-center text-grayscale-700">
             {loginErrorMessage}
