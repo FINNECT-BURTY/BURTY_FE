@@ -39,23 +39,29 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put("/", copy));
           return response;
         })
-        .catch(() => caches.match("/")),
+        .catch(async () => {
+          const cachedShell = await caches.match("/");
+          return cachedShell || new Response("Offline", { status: 503 });
+        }),
     );
     return;
   }
 
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const networkResponse = fetch(request).then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        }
+    caches
+      .match(request)
+      .then((cachedResponse) => {
+        const networkResponse = fetch(request).then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
 
-        return response;
-      });
+          return response;
+        });
 
-      return cachedResponse || networkResponse;
-    }),
+        return cachedResponse || networkResponse;
+      })
+      .catch(() => new Response("Offline", { status: 503 })),
   );
 });
