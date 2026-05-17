@@ -66,9 +66,17 @@ function resolveErrorCopy(code: string | null | undefined): ErrorCopy {
   };
 }
 
-function resolveDestination(newUser: string | null, profileComplete: string | null): string {
-  if (newUser === "true") return "/onboarding";
-  if (profileComplete === "false") return "/onboarding";
+function resolveDestination(
+  newUser: string | null,
+  profileComplete: string | null,
+): string {
+  if (newUser === "true" || profileComplete === "false") {
+    const params = new URLSearchParams();
+    if (newUser) params.set("newUser", newUser);
+    if (profileComplete) params.set("profileComplete", profileComplete);
+    params.set("step", "profile");
+    return `/onboarding?${params.toString()}`;
+  }
   return "/";
 }
 
