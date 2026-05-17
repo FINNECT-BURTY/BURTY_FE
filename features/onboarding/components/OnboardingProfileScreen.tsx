@@ -17,6 +17,8 @@ type ProfileResponse = Readonly<{
 
 type UxMode = "STANDARD" | "SENIOR";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+
 function onlyDigits(value: string) {
   return value.replace(/\D/g, "");
 }
@@ -73,7 +75,7 @@ export function OnboardingProfileScreen() {
     setErrorMessage("");
 
     try {
-      const response = await fetch("/api/onboarding/profile", {
+      const response = await fetch(`${API_BASE_URL}/api/v1/onboarding/profile`, {
         body: JSON.stringify({
           phone: normalizedPhone,
           name: name.trim(),
@@ -85,6 +87,7 @@ export function OnboardingProfileScreen() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         method: "POST",
       });
 

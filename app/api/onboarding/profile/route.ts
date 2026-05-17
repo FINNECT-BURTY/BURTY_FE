@@ -28,6 +28,7 @@ export async function POST(request: Request) {
     const response = await fetch(backendUrl, {
       body: await request.text(),
       cache: "no-store",
+      credentials: "include",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
