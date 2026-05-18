@@ -1,5 +1,10 @@
 import { HomeScreen } from "@/features/home";
+import { ProtectedRoute } from "@/shared/auth/ProtectedRoute";
 
 export default function Page() {
-  return <HomeScreen />;
+  return (
+    <ProtectedRoute>
+      <HomeScreen />
+    </ProtectedRoute>
+  );
 }
