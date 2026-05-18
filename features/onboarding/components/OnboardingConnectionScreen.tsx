@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { OnboardingExitConfirmModal } from "@/features/onboarding/components/OnboardingExitConfirmModal";
 import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
@@ -15,10 +16,63 @@ const connectionBenefits = [
   "지금 필요한 행동을 알려드려요",
 ] as const;
 
+const CONNECTION_DURATION_MS = 1800;
+
+function AssetConnectionProgressScreen({ onBack }: Readonly<{ onBack: () => void }>) {
+  const router = useRouter();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      router.replace("/");
+    }, CONNECTION_DURATION_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [router]);
+
+  return (
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
+      <OnboardingHeader onBack={onBack} title="자산 연결하기" />
+
+      <section
+        aria-busy="true"
+        aria-live="polite"
+        className="flex flex-1 flex-col items-center px-6 pt-[86px] text-center"
+        role="status"
+      >
+        <div
+          aria-hidden="true"
+          className="size-40 rounded-full bg-[conic-gradient(var(--grayscale-100)_0deg_90deg,var(--yellow-400)_90deg_270deg,var(--grayscale-100)_270deg_360deg)] p-4"
+        >
+          <div className="size-full rounded-full bg-background" />
+        </div>
+
+        <h1 className="text-title-lg mt-10 text-grayscale-1000">
+          자산을 연결하고 있어요
+        </h1>
+        <p className="text-body-md mt-2 whitespace-pre-line text-grayscale-800">
+          사용자 동의 없이
+          <br />
+          이체, 결제, 대출은 실행되지 않아요
+        </p>
+      </section>
+    </main>
+  );
+}
+
 export function OnboardingConnectionScreen({
   onBack,
 }: OnboardingConnectionScreenProps) {
   const [showRequiredDialog, setShowRequiredDialog] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+
+  const handleConnect = () => {
+    setShowRequiredDialog(false);
+    setConnecting(true);
+  };
+
+  if (connecting) {
+    return <AssetConnectionProgressScreen onBack={() => setConnecting(false)} />;
+  }
 
   return (
     <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
@@ -66,6 +120,7 @@ export function OnboardingConnectionScreen({
         <footer className="mt-auto">
           <button
             className="text-title-sm flex h-[52px] w-full items-center justify-center rounded-2xl bg-yellow-400 text-grayscale-1000"
+            onClick={handleConnect}
             type="button"
           >
             연결하기
@@ -75,8 +130,10 @@ export function OnboardingConnectionScreen({
 
       {showRequiredDialog ? (
         <OnboardingExitConfirmModal
-          onPrimary={() => setShowRequiredDialog(false)}
-          primaryLabel="확인"
+          onPrimary={handleConnect}
+          onSecondary={() => setShowRequiredDialog(false)}
+          primaryLabel="연결하기"
+          secondaryLabel="뒤로가기"
           title={"자산을 연결하지 않으면\n버티를 이용할 수 없어요"}
         />
       ) : null}
