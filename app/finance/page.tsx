@@ -1,5 +1,10 @@
-import { MainPlaceholderScreen } from "@/shared/layout/MainPlaceholderScreen";
+import { FinanceScreen } from "@/features/finance/components/FinanceScreen";
+import { ProtectedRoute } from "@/shared/auth/ProtectedRoute";
 
 export default function Page() {
-  return <MainPlaceholderScreen description="자산 화면" title="자산" />;
+  return (
+    <ProtectedRoute>
+      <FinanceScreen />
+    </ProtectedRoute>
+  );
 }
