@@ -112,3 +112,19 @@ body {
 .animate-loading-spin {
   animation: loading-spin 1.4s linear infinite;
 }
+
+@keyframes splash-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-splash-fade {
+  animation: splash-fade 320ms ease-out both;
+}
