@@ -1,5 +1,10 @@
-import { MainPlaceholderScreen } from "@/shared/layout/MainPlaceholderScreen";
+import { SolutionScreen } from "@/features/solution/components/SolutionScreen";
+import { ProtectedRoute } from "@/shared/auth/ProtectedRoute";
 
 export default function Page() {
-  return <MainPlaceholderScreen description="솔루션 화면" title="솔루션   " />;
+  return (
+    <ProtectedRoute>
+      <SolutionScreen />
+    </ProtectedRoute>
+  );
 }
