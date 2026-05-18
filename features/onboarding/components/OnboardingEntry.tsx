@@ -57,6 +57,9 @@ function createOAuthState() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+/**
+ * BFF 소셜 로그인: FE → Next proxy(authorize-url) → Provider → BE callback → 쿠키 set → FE /auth/callback.
+ */
 export function OnboardingEntry() {
   const [loadingProvider, setLoadingProvider] = useState<SocialProvider | null>(
     null,
@@ -70,11 +73,10 @@ export function OnboardingEntry() {
 
     try {
       const state = createOAuthState();
-      window.sessionStorage.setItem(`burty:${provider}-oauth-state`, state);
-
       const params = new URLSearchParams({ state });
       const response = await fetch(
         `/api/auth/${provider}/authorize-url?${params.toString()}`,
+        { cache: "no-store" },
       );
 
       if (!response.ok) {
@@ -85,10 +87,10 @@ export function OnboardingEntry() {
       const authorizeUrl = result.data?.authorizeUrl;
 
       if (!result.success || !authorizeUrl) {
-        throw new Error(result.message || "Invalid Kakao authorize URL.");
+        throw new Error(result.message || "소셜 로그인 URL을 받지 못했습니다.");
       }
 
-      window.location.href = authorizeUrl;
+      window.location.assign(authorizeUrl);
     } catch (error) {
       console.error(`${provider} login failed:`, error);
       setLoginErrorMessage(
