@@ -1,7 +1,4 @@
-const BACKEND_API_BASE_URL =
-  process.env.BURTY_API_BASE_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "http://44.194.3.230:8080";
+import { getServerApiBaseUrl } from "@/shared/api/config";
 
 function createErrorResponse(message: string, status: number) {
   return Response.json(
@@ -20,15 +17,18 @@ function createErrorResponse(message: string, status: number) {
   );
 }
 
+/**
+ * 서버 사이드 프록시 (쿠키는 브라우저 → API 직접 호출 시에만 동작).
+ * 클라이언트는 {@link backendFetch} 로 BURTY API 를 직접 호출하는 것을 권장.
+ */
 export async function POST(request: Request) {
   try {
-    const backendUrl = new URL("/api/v1/onboarding/profile", BACKEND_API_BASE_URL);
+    const backendUrl = new URL("/api/v1/onboarding/profile", getServerApiBaseUrl());
     const cookie = request.headers.get("cookie");
 
     const response = await fetch(backendUrl, {
       body: await request.text(),
       cache: "no-store",
-      credentials: "include",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",

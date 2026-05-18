@@ -1,7 +1,4 @@
-const BACKEND_API_BASE_URL =
-  process.env.BURTY_API_BASE_URL ??
-  process.env.NEXT_PUBLIC_API_BASE_URL ??
-  "http://44.194.3.230:8080";
+import { getServerApiBaseUrl } from "@/shared/api/config";
 
 const SUPPORTED_PROVIDERS = new Set(["kakao", "google", "naver", "apple"]);
 
@@ -37,26 +34,26 @@ export async function handleSocialAuthorizeUrlRequest(
 
   const requestUrl = new URL(request.url);
   const state = requestUrl.searchParams.get("state");
-  const redirectUri = requestUrl.searchParams.get("redirectUri");
-
-  if (!state) {
-    return createSocialAuthorizeErrorResponse("state 값이 필요합니다.", 400);
-  }
 
   try {
     const backendUrl = new URL(
       `/api/v1/auth/${normalizedProvider}/authorize-url`,
-      BACKEND_API_BASE_URL,
+      getServerApiBaseUrl(),
     );
-    backendUrl.searchParams.set("state", state);
-    if (redirectUri) {
-      backendUrl.searchParams.set("redirectUri", redirectUri);
+    if (state) {
+      backendUrl.searchParams.set("state", state);
     }
 
     const response = await fetch(backendUrl, {
       cache: "no-store",
       headers: {
         Accept: "application/json",
+        ...(request.headers.get("origin")
+          ? { Origin: request.headers.get("origin") as string }
+          : {}),
+        ...(request.headers.get("referer")
+          ? { Referer: request.headers.get("referer") as string }
+          : {}),
       },
     });
 
