@@ -34,6 +34,8 @@ export async function handleSocialAuthorizeUrlRequest(
 
   const requestUrl = new URL(request.url);
   const state = requestUrl.searchParams.get("state");
+  const frontendOrigin =
+    request.headers.get("origin") ?? new URL(request.url).origin;
 
   try {
     const backendUrl = new URL(
@@ -48,9 +50,7 @@ export async function handleSocialAuthorizeUrlRequest(
       cache: "no-store",
       headers: {
         Accept: "application/json",
-        ...(request.headers.get("origin")
-          ? { Origin: request.headers.get("origin") as string }
-          : {}),
+        "X-Frontend-Origin": frontendOrigin,
         ...(request.headers.get("referer")
           ? { Referer: request.headers.get("referer") as string }
           : {}),
