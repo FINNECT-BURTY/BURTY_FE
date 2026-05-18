@@ -58,6 +58,8 @@ const ERROR_COPY: Record<string, ErrorCopy> = {
   },
 };
 
+const LOGIN_ENTRY_PATH = "/onboarding";
+
 function resolveErrorCopy(code: string | null | undefined): ErrorCopy {
   if (!code) return ERROR_COPY.internal_error;
   return ERROR_COPY[code] ?? {
@@ -66,6 +68,7 @@ function resolveErrorCopy(code: string | null | undefined): ErrorCopy {
   };
 }
 
+/** BE BFF 콜백 후 302 로 전달되는 쿼리 기준 분기. */
 function resolveDestination(
   newUser: string | null,
   profileComplete: string | null,
@@ -75,7 +78,7 @@ function resolveDestination(
     if (newUser) params.set("newUser", newUser);
     if (profileComplete) params.set("profileComplete", profileComplete);
     params.set("step", "profile");
-    return `/onboarding?${params.toString()}`;
+    return `${LOGIN_ENTRY_PATH}?${params.toString()}`;
   }
   return "/";
 }
@@ -94,9 +97,22 @@ function AuthCallbackInner() {
   );
 
   useEffect(() => {
+    if (error === "user_cancelled") {
+      router.replace(LOGIN_ENTRY_PATH);
+      return;
+    }
     if (error) return;
     router.replace(destination);
   }, [error, destination, router]);
+
+  if (error === "user_cancelled") {
+    return (
+      <LoadingScreen
+        description="잠시만 기다려 주세요"
+        title="로그인 화면으로 이동 중이에요"
+      />
+    );
+  }
 
   if (error) {
     const copy = resolveErrorCopy(error);
@@ -104,8 +120,8 @@ function AuthCallbackInner() {
       <ErrorScreen
         description={copy.description}
         headerTitle="로그인"
-        homeLabel="홈으로 돌아가기"
-        onRetry={() => router.replace("/")}
+        homeLabel="로그인 화면으로"
+        onRetry={() => router.replace(LOGIN_ENTRY_PATH)}
         retryLabel="다시 시도하기"
         title={copy.title}
       />
