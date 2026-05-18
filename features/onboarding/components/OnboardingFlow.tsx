@@ -9,6 +9,7 @@ import { OnboardingProfileScreen } from "@/features/onboarding/components/Onboar
 import { OnboardingSplash } from "@/features/onboarding/components/OnboardingSplash";
 
 const SPLASH_DURATION_MS = 3000;
+const SPLASH_SEEN_KEY = "burty:onboarding-splash-seen";
 
 type OnboardingScreenView = "splash" | "entry" | "profile" | "agreement" | "funnel";
 
@@ -18,6 +19,22 @@ function shouldShowProfileOnboarding(searchParams: URLSearchParams) {
     searchParams.get("newUser") === "true" ||
     searchParams.get("profileComplete") === "false"
   );
+}
+
+function hasSeenSplash() {
+  try {
+    return window.sessionStorage.getItem(SPLASH_SEEN_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function markSplashSeen() {
+  try {
+    window.sessionStorage.setItem(SPLASH_SEEN_KEY, "true");
+  } catch {
+    // 스토리지가 막힌 환경에서도 스플래시 전환은 계속 진행한다.
+  }
 }
 
 export function OnboardingFlow() {
@@ -30,6 +47,13 @@ export function OnboardingFlow() {
       setView("profile");
       return;
     }
+
+    if (hasSeenSplash()) {
+      setView("entry");
+      return;
+    }
+
+    markSplashSeen();
 
     const timer = window.setTimeout(() => {
       setView("entry");
