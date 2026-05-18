@@ -1,5 +1,10 @@
-import { MainPlaceholderScreen } from "@/shared/layout/MainPlaceholderScreen";
+import { GrantScreen } from "@/features/grant/components/GrantScreen";
+import { ProtectedRoute } from "@/shared/auth/ProtectedRoute";
 
 export default function Page() {
-  return <MainPlaceholderScreen description="지원금 화면" title="지원금" />;
+  return (
+    <ProtectedRoute>
+      <GrantScreen />
+    </ProtectedRoute>
+  );
 }
