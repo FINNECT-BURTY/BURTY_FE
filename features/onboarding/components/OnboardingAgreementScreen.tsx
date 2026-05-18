@@ -253,7 +253,7 @@ export function OnboardingAgreementScreen({
           onSecondary={onBackToEntry}
           primaryLabel="계속 작성하기"
           secondaryLabel="나가기"
-          title={"아직 회원 가입이 완료되지 않았어요\n지금 나가면 정보가 작성 중이던 사라져요"}
+          title={"아직 회원 가입이 완료되지 않았어요\n지금 나가면 작성 중이던 정보가 사라져요"}
         />
       ) : null}
     </main>
