@@ -17,13 +17,12 @@ type SocialProvider = "kakao" | "google" | "naver";
 
 type SocialProviderConfig = Readonly<{
   label: string;
-  loadingLabel: string;
   iconSrc?: string;
   buttonClassName: string;
 }>;
 
 const kakaoButtonClassName =
-  "text-title-sm flex h-13 w-full items-center justify-center rounded-2xl bg-[#fee500] px-6 text-grayscale-1000 disabled:opacity-70";
+  "text-title-sm flex h-13 w-full items-center justify-center gap-3 rounded-2xl bg-[#fee500] px-6 text-grayscale-1000 disabled:opacity-70";
 const googleButtonClassName =
   "text-title-sm flex h-13 w-full items-center justify-center gap-3 rounded-2xl border border-grayscale-200 bg-background px-6 text-grayscale-1000 shadow-[0_1px_8px_rgba(30,30,30,0.04)] disabled:opacity-70";
 const naverButtonClassName =
@@ -32,18 +31,16 @@ const naverButtonClassName =
 const SOCIAL_PROVIDERS: Record<SocialProvider, SocialProviderConfig> = {
   kakao: {
     label: "카카오 로그인",
-    loadingLabel: "카카오 로그인 중...",
+    iconSrc: "/icons/onboarding/logo-kakao.svg",
     buttonClassName: kakaoButtonClassName,
   },
   google: {
-    label: "Google 로그인",
-    loadingLabel: "Google 로그인 중...",
+    label: "Continue with Google",
     iconSrc: "/icons/onboarding/logo-google.svg",
     buttonClassName: googleButtonClassName,
   },
   naver: {
     label: "네이버 로그인",
-    loadingLabel: "네이버 로그인 중...",
     iconSrc: "/icons/onboarding/logo-naver.svg",
     buttonClassName: naverButtonClassName,
   },
@@ -102,7 +99,13 @@ export function OnboardingEntry() {
 
   return (
     <main className="flex min-h-dvh flex-1 flex-col bg-background px-10 pb-[max(20px,env(safe-area-inset-bottom))] pt-8 text-grayscale-1000">
-      <section className="mt-8 text-center">
+      <div aria-hidden="true" className="h-16 shrink-0" />
+
+      <div className="text-body-lg mx-auto mt-10 flex aspect-square w-[200px] items-center justify-center rounded-3xl bg-[#eeeeee] text-grayscale-900">
+        로고
+      </div>
+
+      <section className="mt-4 text-center">
         <h1 className="text-display text-grayscale-1000">
           이번 달, 괜찮을까요?
         </h1>
@@ -111,14 +114,9 @@ export function OnboardingEntry() {
         </p>
       </section>
 
-      <div className="text-body-lg mx-auto mt-6 flex aspect-square w-[200px] items-center justify-center rounded-3xl bg-[#eeeeee] text-grayscale-900">
-        로고
-      </div>
-
-      <div className="mt-10 flex flex-col gap-4">
+      <div className="mt-10 flex flex-col gap-3">
         {(["kakao", "google", "naver"] as const).map((provider) => {
           const providerConfig = SOCIAL_PROVIDERS[provider];
-          const isLoading = loadingProvider === provider;
           return (
             <button
               className={providerConfig.buttonClassName}
@@ -136,7 +134,7 @@ export function OnboardingEntry() {
                   width={16}
                 />
               ) : null}
-              {isLoading ? providerConfig.loadingLabel : providerConfig.label}
+              {providerConfig.label}
             </button>
           );
         })}

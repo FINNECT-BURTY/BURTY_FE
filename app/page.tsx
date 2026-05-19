@@ -1,5 +1,5 @@
-import { HomeScreen } from "@/features/home";
+import { HomeEntryGate } from "@/features/home";
 
 export default function Page() {
-  return <HomeScreen />;
+  return <HomeEntryGate />;
 }

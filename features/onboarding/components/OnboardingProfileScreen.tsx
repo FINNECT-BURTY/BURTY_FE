@@ -1,10 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 import { backendFetch } from "@/shared/api/backendFetch";
+import { ErrorScreen } from "@/shared/layout/ErrorScreen";
 import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
+import { BottomActionBar } from "@/shared/ui/BottomActionBar";
 
 type ProfileResponse = Readonly<{
   success: boolean;
@@ -16,7 +19,20 @@ type ProfileResponse = Readonly<{
   errorCode?: string | null;
 }>;
 
-type UxMode = "STANDARD" | "SENIOR";
+type OnboardingProfileScreenProps = Readonly<{
+  onBack: () => void;
+  onComplete: () => void;
+}>;
+
+const currentYear = new Date().getFullYear();
+const birthYearOptions = Array.from({ length: 121 }, (_, index) =>
+  String(currentYear - index),
+);
+const birthMonthOptions = Array.from({ length: 12 }, (_, index) =>
+  String(index + 1),
+);
+const selectClassName =
+  "text-body-md h-13 w-full appearance-none rounded-2xl border border-grayscale-200 bg-background px-3 pr-8 text-grayscale-1000 outline-none";
 
 function onlyDigits(value: string) {
   return value.replace(/\D/g, "");
@@ -46,32 +62,103 @@ function toAgeRange(birthDate: string) {
   return Math.floor(age / 10) * 10;
 }
 
-export function OnboardingProfileScreen() {
-  const router = useRouter();
+function formatBirthDate(year: string, month: string, day: string) {
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+}
+
+function getDayCount(year: string, month: string) {
+  if (!month) return 31;
+  const safeYear = Number(year || currentYear);
+  return new Date(safeYear, Number(month), 0).getDate();
+}
+
+function BirthSelect({
+  ariaLabel,
+  children,
+  placeholder,
+  value,
+  onChange,
+}: Readonly<{
+  ariaLabel: string;
+  children: ReactNode;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+}>) {
+  return (
+    <span className="relative block">
+      <select
+        aria-label={ariaLabel}
+        className={`${selectClassName} ${value ? "" : "text-grayscale-500"}`}
+        onChange={(event) => onChange(event.target.value)}
+        value={value}
+      >
+        <option disabled hidden value="">
+          {placeholder}
+        </option>
+        {children}
+      </select>
+      <ChevronDown
+        aria-hidden="true"
+        className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-grayscale-400"
+        strokeWidth={1.6}
+      />
+    </span>
+  );
+}
+
+export function OnboardingProfileScreen({
+  onBack,
+  onComplete,
+}: OnboardingProfileScreenProps) {
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [uxMode, setUxMode] = useState<UxMode>("STANDARD");
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [birthYear, setBirthYear] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthDay, setBirthDay] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [hasSubmitError, setHasSubmitError] = useState(false);
 
   const normalizedPhone = onlyDigits(phone);
+  const birthDayOptions = useMemo(
+    () =>
+      Array.from({ length: getDayCount(birthYear, birthMonth) }, (_, index) =>
+        String(index + 1),
+      ),
+    [birthMonth, birthYear],
+  );
+  const birthDate =
+    birthYear && birthMonth && birthDay
+      ? formatBirthDate(birthYear, birthMonth, birthDay)
+      : "";
   const canSubmit = useMemo(
     () =>
       normalizedPhone.length >= 10 &&
       normalizedPhone.length <= 11 &&
       name.trim().length >= 2 &&
       isValidBirthDate(birthDate) &&
-      termsAccepted &&
       !isSubmitting,
-    [birthDate, isSubmitting, name, normalizedPhone, termsAccepted],
+    [birthDate, isSubmitting, name, normalizedPhone],
   );
+
+  const handleBirthYearChange = (nextYear: string) => {
+    setBirthYear(nextYear);
+    if (birthDay && Number(birthDay) > getDayCount(nextYear, birthMonth)) {
+      setBirthDay("");
+    }
+  };
+
+  const handleBirthMonthChange = (nextMonth: string) => {
+    setBirthMonth(nextMonth);
+    if (birthDay && Number(birthDay) > getDayCount(birthYear, nextMonth)) {
+      setBirthDay("");
+    }
+  };
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setIsSubmitting(true);
-    setErrorMessage("");
+    setHasSubmitError(false);
 
     try {
       const response = await backendFetch("/api/v1/onboarding/profile", {
@@ -80,8 +167,9 @@ export function OnboardingProfileScreen() {
           name: name.trim(),
           birthDate,
           ageRange: toAgeRange(birthDate),
-          uxMode,
-          termsAccepted,
+          // TODO: BE ProfileOnboardingRequest 정리 후 제거.
+          uxMode: "STANDARD",
+          termsAccepted: true,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -90,31 +178,47 @@ export function OnboardingProfileScreen() {
       });
 
       const result = (await response.json()) as ProfileResponse;
-      if (!response.ok || !result.success || !result.data?.completed) {
+      const profileCompleted =
+        result.data?.completed === true || result.data?.alreadyRegistered === true;
+      if (!response.ok || !result.success || !profileCompleted) {
         throw new Error(result.message || "Profile onboarding failed.");
       }
 
-      window.sessionStorage.removeItem("burty:onboarding-profile-required");
-      router.replace("/");
+      onComplete();
     } catch (error) {
       console.error("Profile onboarding failed:", error);
-      setErrorMessage("추가 정보를 저장하지 못했어요. 입력값을 확인해 주세요.");
       setIsSubmitting(false);
+      setHasSubmitError(true);
     }
   };
 
+  if (hasSubmitError) {
+    return (
+      <ErrorScreen
+        description="입력값과 연결 상태를 확인한 뒤 다시 시도해주세요"
+        headerTitle="추가 정보"
+        homeHref="/onboarding?step=entry"
+        homeLabel="처음으로 돌아가기"
+        onBack={() => setHasSubmitError(false)}
+        onRetry={() => setHasSubmitError(false)}
+        retryLabel="다시 시도하기"
+        title="추가 정보를 저장하지 못했어요"
+      />
+    );
+  }
+
   return (
     <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
-      <OnboardingHeader title="추가 정보" />
+      <OnboardingHeader onBack={onBack} title="추가 정보" />
 
       <section className="min-h-0 flex-1 overflow-y-auto px-6 pb-6 pt-6">
         <h1 className="text-title-lg text-grayscale-1000">
           버티를 시작하기 전에
           <br />
-          필요한 정보를 확인할게요
+          필요한 정보를 확인할게요.
         </h1>
-        <p className="text-body-md mt-2 text-grayscale-800">
-          입력한 정보는 본인 확인과 맞춤 안내에만 사용돼요.
+        <p className="text-body-md mt-1 text-grayscale-900">
+          입력하신 정보는 본인 확인과 서비스 이용을 위해서만 사용돼요.
         </p>
 
         <div className="mt-8 flex flex-col gap-5">
@@ -124,7 +228,7 @@ export function OnboardingProfileScreen() {
               className="text-body-lg h-13 rounded-2xl border border-grayscale-200 bg-white px-4 text-grayscale-1000 outline-none focus:border-yellow-500"
               maxLength={30}
               onChange={(event) => setName(event.target.value)}
-              placeholder="실명을 입력해 주세요"
+              placeholder="본인 실명을 입력해 주세요."
               value={name}
             />
           </label>
@@ -136,77 +240,62 @@ export function OnboardingProfileScreen() {
               inputMode="tel"
               maxLength={13}
               onChange={(event) => setPhone(event.target.value)}
-              placeholder="01012345678"
+              placeholder="숫자만 입력해 주세요."
               value={phone}
             />
           </label>
 
-          <label className="flex flex-col gap-2">
-            <span className="text-title-sm text-grayscale-1000">생년월일</span>
-            <input
-              className="text-body-lg h-13 rounded-2xl border border-grayscale-200 bg-white px-4 text-grayscale-1000 outline-none focus:border-yellow-500"
-              onChange={(event) => setBirthDate(event.target.value)}
-              type="date"
-              value={birthDate}
-            />
-          </label>
-
-          <fieldset className="flex flex-col gap-3">
-            <legend className="text-title-sm text-grayscale-1000">
-              화면 모드
-            </legend>
-            <div className="grid grid-cols-2 gap-3">
-              {(["STANDARD", "SENIOR"] as const).map((mode) => (
-                <button
-                  className={`text-title-sm h-12 rounded-2xl border ${
-                    uxMode === mode
-                      ? "border-yellow-500 bg-yellow-100 text-grayscale-1000"
-                      : "border-grayscale-200 bg-white text-grayscale-700"
-                  }`}
-                  key={mode}
-                  onClick={() => setUxMode(mode)}
-                  type="button"
-                >
-                  {mode === "STANDARD" ? "기본" : "큰 글씨"}
-                </button>
-              ))}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-title-sm text-grayscale-1000">생년월일</span>
             </div>
-          </fieldset>
-
-          <label className="flex items-start gap-3 rounded-2xl bg-white p-4">
-            <input
-              checked={termsAccepted}
-              className="mt-1 size-5 accent-yellow-500"
-              onChange={(event) => setTermsAccepted(event.target.checked)}
-              type="checkbox"
-            />
-            <span className="text-body-md text-grayscale-900">
-              필수 약관과 개인정보 처리 안내를 확인했고, 추가 정보 저장에 동의합니다.
-            </span>
-          </label>
-
-          {errorMessage ? (
-            <p className="text-caption text-center text-grayscale-700">
-              {errorMessage}
-            </p>
-          ) : null}
+            <div className="grid grid-cols-3 gap-2">
+              <BirthSelect
+                ariaLabel="태어난 연도"
+                onChange={handleBirthYearChange}
+                placeholder="년도"
+                value={birthYear}
+              >
+                {birthYearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}년
+                  </option>
+                ))}
+              </BirthSelect>
+              <BirthSelect
+                ariaLabel="태어난 월"
+                onChange={handleBirthMonthChange}
+                placeholder="월"
+                value={birthMonth}
+              >
+                {birthMonthOptions.map((month) => (
+                  <option key={month} value={month}>
+                    {month}월
+                  </option>
+                ))}
+              </BirthSelect>
+              <BirthSelect
+                ariaLabel="태어난 일"
+                onChange={setBirthDay}
+                placeholder="일"
+                value={birthDay}
+              >
+                {birthDayOptions.map((day) => (
+                  <option key={day} value={day}>
+                    {day}일
+                  </option>
+                ))}
+              </BirthSelect>
+            </div>
+          </div>
         </div>
       </section>
 
-      <footer className="px-6 pb-[max(30px,env(safe-area-inset-bottom))] pt-4">
-        <button
-          className={`text-title-md flex h-13 w-full items-center justify-center rounded-2xl ${
-            canSubmit
-              ? "bg-yellow-400 text-grayscale-1000"
-              : "bg-grayscale-200 text-grayscale-100"
-          }`}
-          disabled={!canSubmit}
-          onClick={handleSubmit}
-          type="button"
-        >
-          {isSubmitting ? "저장 중..." : "완료"}
-        </button>
-      </footer>
+      <BottomActionBar
+        actionLabel="확인"
+        disabled={!canSubmit}
+        onAction={handleSubmit}
+      />
     </main>
   );
 }

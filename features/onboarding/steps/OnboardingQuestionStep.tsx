@@ -1,6 +1,7 @@
 import type { OnboardingStep } from "@/features/onboarding/constants/onboardingSteps";
 import { OnboardingProgressBar } from "@/features/onboarding/ui/OnboardingProgressBar";
 import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
+import { BottomActionBar } from "@/shared/ui/BottomActionBar";
 
 type OnboardingQuestionStepProps = Readonly<{
   step: OnboardingStep;
@@ -77,15 +78,14 @@ export function OnboardingQuestionStep({
         })}
       </section>
 
-      <footer className="mt-auto px-6 pb-[max(24px,env(safe-area-inset-bottom))] pt-8">
-        <button
-          className="text-title-sm flex h-13 w-full items-center justify-center rounded-2xl bg-yellow-400 text-grayscale-1000"
-          onClick={onNext}
-          type="button"
-        >
-          {currentStep === totalSteps ? "확인" : "다음"}
-        </button>
-      </footer>
+      <BottomActionBar
+        actionLabel={currentStep === totalSteps ? "확인" : "다음"}
+        actionTextStyle="title-sm"
+        bottomSpacing="compact"
+        className="mt-auto"
+        onAction={onNext}
+        topSpacing="large"
+      />
     </main>
   );
 }

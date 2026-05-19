@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { OnboardingExitConfirmModal } from "@/features/onboarding/components/OnboardingExitConfirmModal";
 import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
+import { BottomActionBar } from "@/shared/ui/BottomActionBar";
 
 type AgreementId =
   | "service"
@@ -149,15 +150,11 @@ export function OnboardingAgreementScreen({
             ))}
           </p>
         </section>
-        <footer className="px-6 pb-[max(30px,env(safe-area-inset-bottom))] pt-4">
-          <button
-            className="text-title-sm flex h-13 w-full items-center justify-center rounded-2xl bg-yellow-400 text-grayscale-1000"
-            onClick={() => setView({ type: "list" })}
-            type="button"
-          >
-            확인
-          </button>
-        </footer>
+        <BottomActionBar
+          actionLabel="확인"
+          actionTextStyle="title-sm"
+          onAction={() => setView({ type: "list" })}
+        />
       </main>
     );
   }
@@ -232,20 +229,11 @@ export function OnboardingAgreementScreen({
         </section>
       </section>
 
-      <footer className="px-6 pb-[max(30px,env(safe-area-inset-bottom))] pt-4">
-        <button
-          className={`text-title-md flex h-13 w-full items-center justify-center rounded-2xl ${
-            requiredChecked
-              ? "bg-yellow-400 text-grayscale-1000"
-              : "bg-grayscale-200 text-grayscale-100"
-          }`}
-          disabled={!requiredChecked}
-          onClick={onComplete}
-          type="button"
-        >
-          동의하기
-        </button>
-      </footer>
+      <BottomActionBar
+        actionLabel="동의하기"
+        disabled={!requiredChecked}
+        onAction={onComplete}
+      />
 
       {showExitDialog ? (
         <OnboardingExitConfirmModal

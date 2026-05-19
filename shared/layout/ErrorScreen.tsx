@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { BottomActionButton } from "@/shared/ui/BottomActionButton";
+
 type ErrorScreenProps = Readonly<{
   headerTitle: string;
   title: string;
@@ -59,13 +61,9 @@ export function ErrorScreen({
           {description}
         </p>
 
-        <button
-          className="text-title-md mt-16 flex h-[52px] w-full items-center justify-center rounded-2xl bg-yellow-400 px-6 text-grayscale-1000"
-          onClick={onRetry}
-          type="button"
-        >
+        <BottomActionButton className="mt-16 px-6" onClick={onRetry}>
           {retryLabel}
-        </button>
+        </BottomActionButton>
 
         <Link
           className="text-body-md mt-7 text-grayscale-1000"
