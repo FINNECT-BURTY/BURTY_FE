@@ -44,7 +44,7 @@ export function HomeScreen() {
     <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
       <MainHeader />
 
-      <section className="min-h-0 flex-1 overflow-y-auto px-5 pb-7 pt-2">
+      <section className="min-h-0 flex-1 overflow-y-auto px-6 pb-7 pt-2">
         <section className="flex min-h-[360px] flex-col bg-background px-5 py-5">
           <div>
             <h1 className="text-title-lg text-grayscale-1000">
