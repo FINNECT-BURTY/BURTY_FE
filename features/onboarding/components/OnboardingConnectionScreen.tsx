@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { OnboardingExitConfirmModal } from "@/features/onboarding/components/OnboardingExitConfirmModal";
+import { LoadingScreen } from "@/shared/layout/LoadingScreen";
 import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
 import { BottomActionBar } from "@/shared/ui/BottomActionBar";
 
@@ -24,30 +25,10 @@ export function OnboardingConnectionScreen({
 
   if (isConnecting) {
     return (
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
-        <OnboardingHeader onBack={() => setIsConnecting(false)} title="자산 연결하기" />
-
-        <section
-          aria-busy="true"
-          aria-live="polite"
-          className="flex flex-1 flex-col items-center px-8 pt-36 text-center"
-          role="status"
-        >
-          <div
-            aria-hidden="true"
-            className="animate-loading-spin size-36 rounded-full bg-[conic-gradient(var(--yellow-400)_0deg_225deg,var(--grayscale-100)_225deg_360deg)] p-[13px]"
-          >
-            <div className="size-full rounded-full bg-background" />
-          </div>
-
-          <h1 className="text-title-lg mt-12 text-grayscale-1000">
-            자산을 연결하고 있어요
-          </h1>
-          <p className="text-body-md mt-2 whitespace-pre-line text-grayscale-800">
-            {"사용자 동의 없이\n이체, 결제, 대출은 실행되지 않아요"}
-          </p>
-        </section>
-      </main>
+      <LoadingScreen
+        description={"사용자 동의 없이\n이체, 결제, 대출은 실행되지 않아요"}
+        title="자산을 연결하고 있어요"
+      />
     );
   }
 
