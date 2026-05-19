@@ -25,7 +25,7 @@ const SPLASH_SCENES = [
 type SplashStage = 0 | 1 | 2 | 3;
 
 function getSceneClassName(active: boolean) {
-  return `absolute inset-0 transition-opacity duration-[600ms] animate-splash-fade ${
+  return `absolute inset-0 transition-opacity duration-[600ms] ${
     active ? "opacity-100" : "opacity-0"
   }`;
 }
