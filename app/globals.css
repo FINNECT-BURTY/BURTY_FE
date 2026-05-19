@@ -20,6 +20,10 @@
   --yellow-200: #fff5c8;
   --yellow-100: #fffcf1;
 
+  --red: #eb1818;
+  --green: #20a940;
+  --orange: #f96617;
+
   --background: #fcfcfc;
 }
 
@@ -42,6 +46,10 @@
   --color-yellow-300: var(--yellow-300);
   --color-yellow-200: var(--yellow-200);
   --color-yellow-100: var(--yellow-100);
+
+  --color-red: #eb1818;
+  --color-green: #20a940;
+  --color-orange: #f96617;
 
   --color-background: var(--background);
 
