@@ -3,9 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { HomeScreen } from "@/features/home/components/HomeScreen";
 import { backendFetch } from "@/shared/api/backendFetch";
 import { LoadingScreen } from "@/shared/layout/LoadingScreen";
+
+type MainRouteGuardProps = Readonly<{
+  children: React.ReactNode;
+}>;
+
+type AuthStatus = "checking" | "authenticated";
 
 type CurrentUserResponse = Readonly<{
   success: boolean;
@@ -15,9 +20,9 @@ type CurrentUserResponse = Readonly<{
   }> | null;
 }>;
 
-export function HomeEntryGate() {
+export function MainRouteGuard({ children }: MainRouteGuardProps) {
   const router = useRouter();
-  const [authenticated, setAuthenticated] = useState(false);
+  const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
 
   useEffect(() => {
     let mounted = true;
@@ -33,7 +38,7 @@ export function HomeEntryGate() {
           | null;
 
         if (response.ok && payload?.success === true) {
-          if (mounted) setAuthenticated(true);
+          if (mounted) setAuthStatus("authenticated");
           return;
         }
       } catch (error) {
@@ -52,7 +57,7 @@ export function HomeEntryGate() {
     };
   }, [router]);
 
-  if (!authenticated) {
+  if (authStatus !== "authenticated") {
     return (
       <LoadingScreen
         description="잠시만 기다려 주세요"
@@ -61,5 +66,5 @@ export function HomeEntryGate() {
     );
   }
 
-  return <HomeScreen />;
+  return <>{children}</>;
 }

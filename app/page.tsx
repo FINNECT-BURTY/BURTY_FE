@@ -1,5 +1,10 @@
-import { HomeEntryGate } from "@/features/home";
+import { HomeScreen } from "@/features/home";
+import { MainRouteGuard } from "@/shared/layout/MainRouteGuard";
 
 export default function Page() {
-  return <HomeEntryGate />;
+  return (
+    <MainRouteGuard>
+      <HomeScreen />
+    </MainRouteGuard>
+  );
 }

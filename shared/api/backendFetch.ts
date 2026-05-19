@@ -29,11 +29,6 @@ export async function backendFetch(
   init: BackendFetchInit = {},
 ): Promise<Response> {
   const base = getPublicApiBaseUrl();
-  if (!base) {
-    throw new Error(
-      "NEXT_PUBLIC_API_BASE_URL 이 설정되지 않았습니다. .env.local 을 확인해 주세요.",
-    );
-  }
 
   const url = path.startsWith("http") ? path : `${base}${path.startsWith("/") ? path : `/${path}`}`;
 

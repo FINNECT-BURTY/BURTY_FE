@@ -1,10 +1,10 @@
-import { GrantScreen } from "@/features/grant";
+import { RiskDetailScreen } from "@/features/finance";
 import { MainRouteGuard } from "@/shared/layout/MainRouteGuard";
 
 export default function Page() {
   return (
     <MainRouteGuard>
-      <GrantScreen />
+      <RiskDetailScreen />
     </MainRouteGuard>
   );
 }
