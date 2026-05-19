@@ -91,7 +91,7 @@ export function FinanceScreen() {
           <AssetFlowCard />
         </div>
 
-        <section className="mt-6">
+        <section className="mt-1">
           <h2 className="text-title-md text-grayscale-1000">
             지출 및 수입 일정
           </h2>
