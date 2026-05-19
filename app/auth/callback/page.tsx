@@ -59,6 +59,7 @@ const ERROR_COPY: Record<string, ErrorCopy> = {
 };
 
 const LOGIN_ENTRY_PATH = "/onboarding";
+const LOGIN_ENTRY_DIRECT_PATH = "/onboarding?step=entry";
 
 function resolveErrorCopy(code: string | null | undefined): ErrorCopy {
   if (!code) return ERROR_COPY.internal_error;
@@ -68,18 +69,12 @@ function resolveErrorCopy(code: string | null | undefined): ErrorCopy {
   };
 }
 
-/** BE BFF 콜백 후 302 로 전달되는 쿼리 기준 분기. */
-function resolveDestination(
-  newUser: string | null,
-  profileComplete: string | null,
-): string {
-  if (newUser === "true" || profileComplete === "false") {
-    const params = new URLSearchParams();
-    if (newUser) params.set("newUser", newUser);
-    if (profileComplete) params.set("profileComplete", profileComplete);
-    params.set("step", "profile");
-    return `${LOGIN_ENTRY_PATH}?${params.toString()}`;
+/** BE BFF 콜백 후 신규 유저만 필수 온보딩 플로우로 진입한다. */
+function resolveDestination(newUser: string | null): string {
+  if (newUser === "true") {
+    return `${LOGIN_ENTRY_PATH}?step=agreement&newUser=true`;
   }
+
   return "/";
 }
 
@@ -89,16 +84,12 @@ function AuthCallbackInner() {
 
   const error = searchParams.get("error");
   const newUser = searchParams.get("newUser");
-  const profileComplete = searchParams.get("profileComplete");
 
-  const destination = useMemo(
-    () => resolveDestination(newUser, profileComplete),
-    [newUser, profileComplete],
-  );
+  const destination = useMemo(() => resolveDestination(newUser), [newUser]);
 
   useEffect(() => {
     if (error === "user_cancelled") {
-      router.replace(LOGIN_ENTRY_PATH);
+      router.replace(LOGIN_ENTRY_DIRECT_PATH);
       return;
     }
     if (error) return;
@@ -120,8 +111,9 @@ function AuthCallbackInner() {
       <ErrorScreen
         description={copy.description}
         headerTitle="로그인"
+        homeHref={LOGIN_ENTRY_DIRECT_PATH}
         homeLabel="로그인 화면으로"
-        onRetry={() => router.replace(LOGIN_ENTRY_PATH)}
+        onRetry={() => router.replace(LOGIN_ENTRY_DIRECT_PATH)}
         retryLabel="다시 시도하기"
         title={copy.title}
       />

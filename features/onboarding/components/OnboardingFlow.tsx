@@ -8,16 +8,28 @@ import { OnboardingFunnel } from "@/features/onboarding/components/OnboardingFun
 import { OnboardingProfileScreen } from "@/features/onboarding/components/OnboardingProfileScreen";
 import { OnboardingSplash } from "@/features/onboarding/components/OnboardingSplash";
 
-const SPLASH_DURATION_MS = 3000;
+const SPLASH_DURATION_MS = 4600;
+const SPLASH_SHOWN_STORAGE_KEY = "burty:onboarding-splash-shown";
 
 type OnboardingScreenView = "splash" | "entry" | "profile" | "agreement" | "funnel";
+type OnboardingRouteView = Exclude<OnboardingScreenView, "splash">;
+type OnboardingStepView = Exclude<OnboardingScreenView, "splash" | "entry">;
 
-function shouldShowProfileOnboarding(searchParams: URLSearchParams) {
-  return (
-    searchParams.get("step") === "profile" ||
-    searchParams.get("newUser") === "true" ||
-    searchParams.get("profileComplete") === "false"
-  );
+function resolveOnboardingStep(searchParams: URLSearchParams): OnboardingRouteView | null {
+  const step = searchParams.get("step");
+  if (step === "entry") {
+    return "entry";
+  }
+
+  if (step === "agreement" || step === "profile" || step === "funnel") {
+    return step;
+  }
+
+  if (searchParams.get("newUser") === "true") {
+    return "agreement";
+  }
+
+  return null;
 }
 
 export function OnboardingFlow() {
@@ -25,11 +37,19 @@ export function OnboardingFlow() {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
+    const onboardingStep = resolveOnboardingStep(searchParams);
+    const splashAlreadyShown =
+      window.sessionStorage.getItem(SPLASH_SHOWN_STORAGE_KEY) === "true";
 
-    if (shouldShowProfileOnboarding(searchParams)) {
-      setView("profile");
-      return;
+    if (onboardingStep || splashAlreadyShown) {
+      const timer = window.setTimeout(() => {
+        setView(onboardingStep ?? "entry");
+      }, 0);
+
+      return () => window.clearTimeout(timer);
     }
+
+    window.sessionStorage.setItem(SPLASH_SHOWN_STORAGE_KEY, "true");
 
     const timer = window.setTimeout(() => {
       setView("entry");
@@ -37,6 +57,16 @@ export function OnboardingFlow() {
 
     return () => window.clearTimeout(timer);
   }, []);
+
+  const replaceOnboardingStep = (nextView: OnboardingStepView) => {
+    window.history.replaceState(null, "", `/onboarding?step=${nextView}`);
+    setView(nextView);
+  };
+
+  const handleBackToEntry = () => {
+    window.history.replaceState(null, "", "/onboarding");
+    setView("entry");
+  };
 
   if (view === "splash") {
     return <OnboardingSplash />;
@@ -47,17 +77,26 @@ export function OnboardingFlow() {
   }
 
   if (view === "profile") {
-    return <OnboardingProfileScreen />;
+    return (
+      <OnboardingProfileScreen
+        onBack={() => replaceOnboardingStep("agreement")}
+        onComplete={() => replaceOnboardingStep("funnel")}
+      />
+    );
   }
 
   if (view === "agreement") {
     return (
       <OnboardingAgreementScreen
-        onBackToEntry={() => setView("entry")}
-        onComplete={() => setView("funnel")}
+        onBackToEntry={handleBackToEntry}
+        onComplete={() => replaceOnboardingStep("profile")}
       />
     );
   }
 
-  return <OnboardingFunnel onBackToAgreement={() => setView("agreement")} />;
+  return (
+    <OnboardingFunnel
+      onBackToProfile={() => replaceOnboardingStep("profile")}
+    />
+  );
 }

@@ -123,6 +123,9 @@ yellow-400      #f4dc70
 yellow-300      #ffed9e
 yellow-200      #fff5c8
 yellow-100      #fffcf1
+red             #eb1818
+green           #20a940
+orange          #f96617
 ```
 
 - 새 색상이 필요하면 먼저 토큰으로 추가할지 검토하고, 임의 hex 값을 컴포넌트에 흩뿌리지 않는다.
@@ -131,6 +134,21 @@ yellow-100      #fffcf1
 - 반복되는 스타일은 필요할 때만 컴포넌트화한다.
 - 화면 텍스트가 모바일에서 넘치거나 겹치지 않도록 확인한다.
 - 버튼, 링크, 입력, 로딩, 비활성 상태를 누락하지 않는다.
+
+## 공통 UI와 레이아웃 컴포넌트
+
+- 상단 헤더의 공통 기반은 `shared/layout/Header.tsx`를 사용한다.
+- 온보딩 헤더는 `shared/layout/OnboardingHeader.tsx`를 사용한다. 직접 뒤로가기 아이콘을 그리지 않고 `public/icons/header/back-arrow.svg`를 사용한다.
+- 홈/메인 탭 헤더는 `shared/layout/MainHeader.tsx`를 사용한다. 좌측 로고 텍스트는 `text-title-md text-grayscale-1000` 기준으로 둔다.
+- 프로젝트 공통 하단 CTA 버튼은 `shared/ui/BottomActionButton.tsx`를 사용한다.
+- safe-area padding, 하단 CTA, 보조 텍스트가 함께 필요한 화면은 `shared/ui/BottomActionBar.tsx`를 사용한다.
+- 하단 고정 버튼과 보조 텍스트를 개별 화면에서 새로 조합하기보다 위 공통 컴포넌트 사용을 먼저 검토한다.
+
+## 온보딩
+
+- 온보딩 스플래시는 `public/icons/onboarding/splash-1.svg`부터 `splash-4.svg`까지의 Figma export SVG를 사용한다.
+- 스플래시의 Diamond fill, blur, 텍스트 위치를 CSS로 다시 구현하지 않는다. 필요하면 SVG asset을 교체한다.
+- 온보딩 단계 화면은 공통 `OnboardingHeader`와 `BottomActionBar` 사용을 우선한다.
 
 ## PWA
 

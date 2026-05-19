@@ -1,7 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+
+import { Header, HeaderBackButton } from "@/shared/layout/Header";
+import { BottomActionButton } from "@/shared/ui/BottomActionButton";
 
 type ErrorScreenProps = Readonly<{
   headerTitle: string;
@@ -26,25 +28,10 @@ export function ErrorScreen({
 }: ErrorScreenProps) {
   return (
     <main className="flex min-h-0 flex-1 flex-col bg-background text-grayscale-1000">
-      <header className="relative flex h-16 shrink-0 items-center justify-center px-6">
-        {onBack ? (
-          <button
-            aria-label="뒤로가기"
-            className="absolute left-6 flex size-10 items-center justify-center text-grayscale-1000"
-            onClick={onBack}
-            type="button"
-          >
-            <Image
-              alt=""
-              aria-hidden="true"
-              height={24}
-              src="/icons/header/back-arrow.svg"
-              width={24}
-            />
-          </button>
-        ) : null}
-        <h1 className="text-title-md text-grayscale-1000">{headerTitle}</h1>
-      </header>
+      <Header
+        leftSlot={onBack ? <HeaderBackButton onClick={onBack} /> : null}
+        title={headerTitle}
+      />
 
       <section className="flex flex-1 flex-col items-center px-7 pt-32 text-center">
         <div
@@ -59,13 +46,9 @@ export function ErrorScreen({
           {description}
         </p>
 
-        <button
-          className="text-title-md mt-16 flex h-[52px] w-full items-center justify-center rounded-2xl bg-yellow-400 px-6 text-grayscale-1000"
-          onClick={onRetry}
-          type="button"
-        >
+        <BottomActionButton className="mt-16 px-6" onClick={onRetry}>
           {retryLabel}
-        </button>
+        </BottomActionButton>
 
         <Link
           className="text-body-md mt-7 text-grayscale-1000"

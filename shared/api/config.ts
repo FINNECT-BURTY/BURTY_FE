@@ -7,7 +7,7 @@ export function getPublicApiBaseUrl(): string {
   const base =
     process.env.NEXT_PUBLIC_API_BASE_URL ??
     process.env.NEXT_PUBLIC_API_URL ??
-    "";
+    "https://burty.co.kr";
   return base.replace(/\/$/, "");
 }
 
