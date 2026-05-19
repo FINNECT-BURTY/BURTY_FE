@@ -46,7 +46,7 @@ const secondaryBaseClassNames: Record<BottomActionBarSecondaryPosition, string> 
 const secondarySpacingClassNames: Record<BottomActionBarSecondaryPosition, string> =
   {
     above: "mb-5",
-    below: "mt-7",
+    below: "mt-4",
   };
 
 export function BottomActionBar({
