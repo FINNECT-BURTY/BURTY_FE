@@ -20,7 +20,13 @@
   --yellow-200: #fff5c8;
   --yellow-100: #fffcf1;
 
+  --red: #eb1818;
+  --green: #20a940;
+  --orange: #f96617;
+
   --background: #fcfcfc;
+  --main-background: #f6f7f7;
+  --effect-shadow-1: 0 0 8px rgb(234 234 234 / 80%);
 }
 
 @theme inline {
@@ -43,7 +49,14 @@
   --color-yellow-200: var(--yellow-200);
   --color-yellow-100: var(--yellow-100);
 
+  --color-red: #eb1818;
+  --color-green: #20a940;
+  --color-orange: #f96617;
+
   --color-background: var(--background);
+  --color-main-background: var(--main-background);
+
+  --shadow-1: var(--effect-shadow-1);
 
   --font-sans: var(--font-pretendard);
 }

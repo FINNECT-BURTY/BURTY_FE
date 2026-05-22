@@ -1,50 +1,37 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 
+import { Header, HeaderBackButton } from "@/shared/layout/Header";
+import { BottomActionButton } from "@/shared/ui/BottomActionButton";
+
 type ErrorScreenProps = Readonly<{
-  headerTitle: string;
-  title: string;
-  description: string;
-  retryLabel: string;
-  homeLabel: string;
+  headerTitle?: string;
+  title?: string;
+  description?: string;
+  retryLabel?: string;
+  homeLabel?: string;
   homeHref?: string;
   onBack?: () => void;
   onRetry: () => void;
 }>;
 
 export function ErrorScreen({
-  headerTitle,
-  title,
-  description,
-  retryLabel,
-  homeLabel,
+  headerTitle = "오류 발생",
+  title = "버티가 잠시 헤매고 있어요",
+  description = "다시 시도하면 금방 돌아올 거예요",
+  retryLabel = "다시 시도하기",
+  homeLabel = "홈으로 돌아가기",
   homeHref = "/",
   onBack,
   onRetry,
 }: ErrorScreenProps) {
   return (
     <main className="flex min-h-0 flex-1 flex-col bg-background text-grayscale-1000">
-      <header className="relative flex h-16 shrink-0 items-center justify-center px-6">
-        {onBack ? (
-          <button
-            aria-label="뒤로가기"
-            className="absolute left-6 flex size-10 items-center justify-center text-grayscale-1000"
-            onClick={onBack}
-            type="button"
-          >
-            <Image
-              alt=""
-              aria-hidden="true"
-              height={24}
-              src="/icons/header/back-arrow.svg"
-              width={24}
-            />
-          </button>
-        ) : null}
-        <h1 className="text-title-md text-grayscale-1000">{headerTitle}</h1>
-      </header>
+      <Header
+        leftSlot={onBack ? <HeaderBackButton onClick={onBack} /> : null}
+        title={headerTitle}
+      />
 
       <section className="flex flex-1 flex-col items-center px-7 pt-32 text-center">
         <div
@@ -59,13 +46,9 @@ export function ErrorScreen({
           {description}
         </p>
 
-        <button
-          className="text-title-md mt-16 flex h-[52px] w-full items-center justify-center rounded-2xl bg-yellow-400 px-6 text-grayscale-1000"
-          onClick={onRetry}
-          type="button"
-        >
+        <BottomActionButton className="mt-16 px-6" onClick={onRetry}>
           {retryLabel}
-        </button>
+        </BottomActionButton>
 
         <Link
           className="text-body-md mt-7 text-grayscale-1000"

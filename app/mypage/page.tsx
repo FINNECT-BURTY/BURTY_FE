@@ -1,5 +1,10 @@
-import { MainPlaceholderScreen } from "@/shared/layout/MainPlaceholderScreen";
+import { MyPageScreen } from "@/features/mypage";
+import { MainRouteGuard } from "@/shared/layout/MainRouteGuard";
 
 export default function Page() {
-  return <MainPlaceholderScreen description="내정보 화면" title="내정보" />;
+  return (
+    <MainRouteGuard>
+      <MyPageScreen />
+    </MainRouteGuard>
+  );
 }

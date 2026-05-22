@@ -3,7 +3,9 @@
 import { useState } from "react";
 
 import { OnboardingExitConfirmModal } from "@/features/onboarding/components/OnboardingExitConfirmModal";
+import { LoadingScreen } from "@/shared/layout/LoadingScreen";
 import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
+import { BottomActionBar } from "@/shared/ui/BottomActionBar";
 
 type OnboardingConnectionScreenProps = Readonly<{
   onBack: () => void;
@@ -19,6 +21,11 @@ export function OnboardingConnectionScreen({
   onBack,
 }: OnboardingConnectionScreenProps) {
   const [showRequiredDialog, setShowRequiredDialog] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  if (isConnecting) {
+    return <LoadingScreen />;
+  }
 
   return (
     <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
@@ -54,30 +61,27 @@ export function OnboardingConnectionScreen({
         <p className="text-body-md mx-auto text-grayscale-900">
           사용자 동의 없이 이체, 결제, 대출 신청은 실행되지 않아요.
         </p>
-
-        <button
-          className="text-caption mx-auto mt-8 border-b border-grayscale-800 pb-0.5 text-grayscale-800"
-          onClick={() => setShowRequiredDialog(true)}
-          type="button"
-        >
-          나중에 할게요
-        </button>
-
-        <footer className="mt-auto">
-          <button
-            className="text-title-sm flex h-[52px] w-full items-center justify-center rounded-2xl bg-yellow-400 text-grayscale-1000"
-            type="button"
-          >
-            연결하기
-          </button>
-        </footer>
       </section>
+
+      <BottomActionBar
+        actionLabel="연결하기"
+        actionTextStyle="title-sm"
+        onAction={() => setIsConnecting(true)}
+        onSecondary={() => setShowRequiredDialog(true)}
+        secondaryLabel="나중에 할게요"
+        secondaryPosition="above"
+      />
 
       {showRequiredDialog ? (
         <OnboardingExitConfirmModal
-          onPrimary={() => setShowRequiredDialog(false)}
-          primaryLabel="확인"
-          title={"자산을 연결하지 않으면\n버티를 이용할 수 없어요"}
+          onPrimary={() => {
+            setShowRequiredDialog(false);
+            setIsConnecting(true);
+          }}
+          onSecondary={() => setShowRequiredDialog(false)}
+          primaryLabel="연결하기"
+          secondaryLabel="뒤로가기"
+          title={"자산을 연결해야\n버티를 이용할 수 있어요"}
         />
       ) : null}
     </main>

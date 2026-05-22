@@ -1,9 +1,12 @@
 type LoadingScreenProps = Readonly<{
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
 }>;
 
-export function LoadingScreen({ title, description }: LoadingScreenProps) {
+export function LoadingScreen({
+  title = "버티가 열심히 준비 중이에요",
+  description = "잠시만 기다려주세요",
+}: LoadingScreenProps = {}) {
   return (
     <main className="flex min-h-0 flex-1 flex-col bg-background">
       <section
