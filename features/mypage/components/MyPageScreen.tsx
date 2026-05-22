@@ -164,7 +164,7 @@ export function MyPageScreen() {
           onPrimary={handleLogout}
           onSecondary={handleCloseLogoutModal}
           primaryDisabled={isLoggingOut}
-          primaryLabel={isLoggingOut ? "로그아웃 중..." : "로그아웃"}
+          primaryLabel="로그아웃"
           secondaryLabel="취소"
           title="정말로 로그아웃하시겠습니까?"
         />
