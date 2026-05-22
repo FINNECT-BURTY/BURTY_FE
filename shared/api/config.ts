@@ -1,8 +1,7 @@
-function normalizeBaseUrl(value: string | undefined, envName: string): string {
-  if (!value) {
-    throw new Error(`${envName} 환경변수가 설정되지 않았습니다.`);
-  }
+const PUBLIC_API_BASE_URL = "https://burty.co.kr";
+const SERVER_API_BASE_URL = "http://44.194.3.230:8080";
 
+function normalizeBaseUrl(value: string): string {
   return value.replace(/\/$/, "");
 }
 
@@ -13,12 +12,11 @@ function normalizeBaseUrl(value: string | undefined, envName: string): string {
  */
 export function getPublicApiBaseUrl(): string {
   return normalizeBaseUrl(
-    process.env.NEXT_PUBLIC_API_BASE_URL,
-    "NEXT_PUBLIC_API_BASE_URL",
+    process.env.NEXT_PUBLIC_API_BASE_URL ?? PUBLIC_API_BASE_URL,
   );
 }
 
 /** Next.js Route Handler → BURTY API (서버 사이드). */
 export function getServerApiBaseUrl(): string {
-  return normalizeBaseUrl(process.env.BURTY_API_BASE_URL, "BURTY_API_BASE_URL");
+  return normalizeBaseUrl(process.env.BURTY_API_BASE_URL ?? SERVER_API_BASE_URL);
 }
