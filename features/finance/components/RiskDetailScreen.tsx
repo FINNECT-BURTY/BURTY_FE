@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 
 import { AssetFlowChart } from "@/features/finance/components/AssetFlowChart";
+import { useCurrentUser } from "@/shared/auth/currentUser";
 import { Header, HeaderBackButton } from "@/shared/layout/Header";
 import { BottomActionBar } from "@/shared/ui/BottomActionBar";
 
@@ -40,6 +41,7 @@ function formatWon(value: number) {
 
 export function RiskDetailScreen() {
   const router = useRouter();
+  const { user } = useCurrentUser();
 
   const handleBack = () => {
     router.back();
@@ -56,7 +58,7 @@ export function RiskDetailScreen() {
       <section className="min-h-0 flex-1 overflow-y-auto px-6 pb-7 pt-4">
         <article className="bg-background px-5 pt-5 rounded-2xl shadow-1">
           <h1 className="text-title-md text-grayscale-1000">
-            00님 예상 위험이 있어요
+            {user.displayName}님 예상 위험이 있어요
           </h1>
           <p className="text-body-md mt-1 text-grayscale-900">
             25일에 -12,000원이 부족할 예정이에요

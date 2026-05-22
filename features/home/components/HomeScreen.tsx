@@ -1,3 +1,6 @@
+"use client";
+
+import { useCurrentUser } from "@/shared/auth/currentUser";
 import { BottomNavigation } from "@/shared/layout/BottomNavigation";
 import { MainHeader } from "@/shared/layout/MainHeader";
 import { BottomActionButton } from "@/shared/ui/BottomActionButton";
@@ -17,7 +20,6 @@ const riskLevelClassNames: Record<RiskLevel, string> = {
 };
 
 const homeSummary = {
-  userName: "00",
   savingRate: 12,
   spendableAmount: 55000,
   monthlyLimit: 132400,
@@ -33,6 +35,7 @@ function formatWon(value: number) {
 }
 
 export function HomeScreen() {
+  const { user } = useCurrentUser();
   const spendableRatio = Math.min(
     Math.max(homeSummary.spendableAmount / homeSummary.monthlyLimit, 0),
     1,
@@ -48,7 +51,7 @@ export function HomeScreen() {
         <section className="flex min-h-[360px] flex-col bg-background px-5 py-5 rounded-2xl shadow-1">
           <div>
             <h1 className="text-title-lg text-grayscale-1000">
-              안녕하세요 {homeSummary.userName}님!
+              안녕하세요 {user.displayName}님!
             </h1>
             <p className="text-body-md mt-1 text-grayscale-900">
               어제보다 {homeSummary.savingRate}% 절약 중이에요
@@ -75,7 +78,7 @@ export function HomeScreen() {
 
         <section className="mt-4 flex min-h-20 items-center justify-between bg-background px-5 rounded-2xl border border-grayscale-100">
           <h2 className="text-title-sm text-grayscale-1000">
-            {homeSummary.userName}님의 총 자산
+            {user.displayName}님의 총 자산
           </h2>
           <p className="text-title-sm text-grayscale-900">
             {formatWon(homeSummary.totalAsset)}

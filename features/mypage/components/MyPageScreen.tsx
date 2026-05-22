@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { backendFetch } from "@/shared/api/backendFetch";
+import { useCurrentUser } from "@/shared/auth/currentUser";
 import { BottomNavigation } from "@/shared/layout/BottomNavigation";
 import { MainHeader } from "@/shared/layout/MainHeader";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
@@ -53,6 +54,7 @@ function ProfileAvatar() {
 
 export function MyPageScreen() {
   const router = useRouter();
+  const { user } = useCurrentUser();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -110,7 +112,9 @@ export function MyPageScreen() {
       <section className="min-h-0 flex-1 overflow-y-auto pb-4">
         <section className="flex flex-col items-center py-5 text-center">
           <ProfileAvatar />
-          <h1 className="text-title-md mt-3 text-grayscale-1000">김OO님</h1>
+          <h1 className="text-title-md mt-3 text-grayscale-1000">
+            {user.displayName}님
+          </h1>
           <button
             className="text-body-md mt-4 rounded-3xl border border-grayscale-200 px-4 py-2 text-grayscale-800"
             type="button"

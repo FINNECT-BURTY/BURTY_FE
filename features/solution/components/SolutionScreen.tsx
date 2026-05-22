@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+import { useCurrentUser } from "@/shared/auth/currentUser";
 import { BottomNavigation } from "@/shared/layout/BottomNavigation";
 import { MainHeader } from "@/shared/layout/MainHeader";
 import { BottomActionButton } from "@/shared/ui/BottomActionButton";
@@ -29,6 +30,7 @@ const alternativeSolutions: readonly AlternativeSolution[] = [
 
 export function SolutionScreen() {
   const router = useRouter();
+  const { user } = useCurrentUser();
 
   const handleResolve = () => {
     router.push("/solution/resolve");
@@ -43,7 +45,7 @@ export function SolutionScreen() {
 
         <article className="mt-4 bg-background px-5 py-5 rounded-2xl shadow-1">
           <h2 className="text-title-md text-grayscale-1000">
-            00님 지금 필요한 솔루션이 있어요
+            {user.displayName}님 지금 필요한 솔루션이 있어요
           </h2>
           <p className="text-body-md mt-1 text-grayscale-900">
             50,000원을 확보할 수 있어요

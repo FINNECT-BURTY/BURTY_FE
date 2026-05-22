@@ -3,7 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { backendFetch } from "@/shared/api/backendFetch";
+import {
+  type CurrentUser,
+  CurrentUserProvider,
+} from "@/shared/auth/currentUser";
+import { fetchCurrentUser } from "@/shared/auth/fetchCurrentUser";
 import { LoadingScreen } from "@/shared/layout/LoadingScreen";
 
 type MainRouteGuardProps = Readonly<{
@@ -12,33 +16,23 @@ type MainRouteGuardProps = Readonly<{
 
 type AuthStatus = "checking" | "authenticated";
 
-type CurrentUserResponse = Readonly<{
-  success: boolean;
-  data?: Readonly<{
-    userId?: string;
-    profileComplete?: boolean;
-  }> | null;
-}>;
-
 export function MainRouteGuard({ children }: MainRouteGuardProps) {
   const router = useRouter();
   const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
   useEffect(() => {
     let mounted = true;
 
     async function checkAuth() {
       try {
-        const response = await backendFetch("/api/v1/auth/me", {
-          cache: "no-store",
-          method: "GET",
-        });
-        const payload = (await response.json().catch(() => null)) as
-          | CurrentUserResponse
-          | null;
+        const user = await fetchCurrentUser();
 
-        if (response.ok && payload?.success === true) {
-          if (mounted) setAuthStatus("authenticated");
+        if (user) {
+          if (mounted) {
+            setCurrentUser(user);
+            setAuthStatus("authenticated");
+          }
           return;
         }
       } catch (error) {
@@ -61,5 +55,7 @@ export function MainRouteGuard({ children }: MainRouteGuardProps) {
     return <LoadingScreen />;
   }
 
-  return <>{children}</>;
+  return currentUser ? (
+    <CurrentUserProvider user={currentUser}>{children}</CurrentUserProvider>
+  ) : null;
 }
