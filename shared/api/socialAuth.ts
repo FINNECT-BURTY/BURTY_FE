@@ -1,4 +1,4 @@
-import { getServerApiBaseUrl } from "@/shared/api/config";
+import { getPublicAppBaseUrl, getServerApiBaseUrl } from "@/shared/api/config";
 
 const SUPPORTED_PROVIDERS = new Set(["kakao", "google", "naver", "apple"]);
 
@@ -44,16 +44,18 @@ export async function handleSocialAuthorizeUrlRequest(
       backendUrl.searchParams.set("state", state);
     }
 
+    const appBaseUrl = getPublicAppBaseUrl(requestUrl.origin);
+    const appCallbackUrl = new URL("/auth/callback", appBaseUrl).toString();
+
     const response = await fetch(backendUrl, {
       cache: "no-store",
       headers: {
         Accept: "application/json",
-        ...(request.headers.get("origin")
-          ? { Origin: request.headers.get("origin") as string }
-          : {}),
-        ...(request.headers.get("referer")
-          ? { Referer: request.headers.get("referer") as string }
-          : {}),
+        Origin: appBaseUrl,
+        Referer: appCallbackUrl,
+        "X-Forwarded-Host": new URL(appBaseUrl).host,
+        "X-Forwarded-Proto": new URL(appBaseUrl).protocol.replace(":", ""),
+        "X-Redirect-Uri": appCallbackUrl,
       },
     });
 

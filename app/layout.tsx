@@ -42,9 +42,9 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${pretendard.variable} antialiased`}
+      className={`${pretendard.variable} h-full bg-background antialiased overscroll-none`}
     >
-      <body className="min-h-dvh bg-background text-grayscale-1000">
+      <body className="h-dvh overflow-hidden bg-background text-grayscale-1000 overscroll-none">
         <PwaRegister />
         <MobileAppShell>{children}</MobileAppShell>
       </body>
