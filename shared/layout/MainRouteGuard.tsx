@@ -40,7 +40,7 @@ export function MainRouteGuard({ children }: MainRouteGuardProps) {
       }
 
       if (mounted) {
-        router.replace("/onboarding?step=entry");
+        router.replace("/onboarding");
       }
     }
 

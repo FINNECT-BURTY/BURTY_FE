@@ -82,10 +82,12 @@ function AxisTick({
   payload,
   x = 0,
   y = 0,
+  compact = false,
   visibleRiskDate,
-}: AxisTickProps & Readonly<{ visibleRiskDate?: string }>) {
+}: AxisTickProps & Readonly<{ compact?: boolean; visibleRiskDate?: string }>) {
   const value = payload?.value ?? "";
   const isRiskDate = value === visibleRiskDate;
+  const label = compact ? value.replace("일", "") : value;
 
   return (
     <text
@@ -96,7 +98,7 @@ function AxisTick({
       x={x}
       y={y + 14}
     >
-      {value}
+      {label}
     </text>
   );
 }
@@ -204,7 +206,12 @@ export function AssetFlowChart({
               dataKey="date"
               interval={0}
               padding={{ left: 24, right: 24 }}
-              tick={<AxisTick visibleRiskDate={visibleRiskPoint?.date} />}
+              tick={
+                <AxisTick
+                  compact={selectedRange !== null}
+                  visibleRiskDate={visibleRiskPoint?.date}
+                />
+              }
               tickLine={false}
               ticks={xAxisTicks}
             />
