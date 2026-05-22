@@ -109,7 +109,7 @@ export function MyPageScreen() {
     <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <MainHeader />
 
-      <section className="min-h-0 flex-1 overflow-y-auto pb-4">
+      <section className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-4">
         <section className="flex flex-col items-center py-5 text-center">
           <ProfileAvatar />
           <h1 className="text-title-md mt-3 text-grayscale-1000">
@@ -123,7 +123,7 @@ export function MyPageScreen() {
           </button>
         </section>
 
-        <div className="-mx-6 h-2 bg-grayscale-100" />
+        <div className="h-2 w-full bg-grayscale-100" />
 
         <section className="px-5 py-6">
           {menuSections.map((section, index) => {

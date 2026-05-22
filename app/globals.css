@@ -61,10 +61,16 @@
   --font-sans: var(--font-pretendard);
 }
 
+html,
 body {
   background: var(--background);
+  overscroll-behavior: none;
+}
+
+body {
   color: var(--grayscale-1000);
   font-family: var(--font-pretendard), Arial, Helvetica, sans-serif;
+  overflow: hidden;
 }
 
 .text-display {
