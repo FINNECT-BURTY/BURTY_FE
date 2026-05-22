@@ -9,7 +9,6 @@ import { OnboardingProfileScreen } from "@/features/onboarding/components/Onboar
 import { OnboardingSplash } from "@/features/onboarding/components/OnboardingSplash";
 
 const SPLASH_DURATION_MS = 4600;
-const SPLASH_SHOWN_STORAGE_KEY = "burty:onboarding-splash-shown";
 
 type OnboardingScreenView = "splash" | "entry" | "profile" | "agreement" | "funnel";
 type OnboardingRouteView = Exclude<OnboardingScreenView, "splash">;
@@ -38,18 +37,14 @@ export function OnboardingFlow() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const onboardingStep = resolveOnboardingStep(searchParams);
-    const splashAlreadyShown =
-      window.sessionStorage.getItem(SPLASH_SHOWN_STORAGE_KEY) === "true";
 
-    if (onboardingStep || splashAlreadyShown) {
+    if (onboardingStep) {
       const timer = window.setTimeout(() => {
-        setView(onboardingStep ?? "entry");
+        setView(onboardingStep);
       }, 0);
 
       return () => window.clearTimeout(timer);
     }
-
-    window.sessionStorage.setItem(SPLASH_SHOWN_STORAGE_KEY, "true");
 
     const timer = window.setTimeout(() => {
       setView("entry");
