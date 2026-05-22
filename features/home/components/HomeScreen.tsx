@@ -41,11 +41,11 @@ export function HomeScreen() {
   const riskLevel = homeSummary.riskLevel;
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <MainHeader />
 
       <section className="min-h-0 flex-1 overflow-y-auto px-6 pb-7 pt-2">
-        <section className="flex min-h-[360px] flex-col bg-background px-5 py-5">
+        <section className="flex min-h-[360px] flex-col bg-background px-5 py-5 rounded-2xl shadow-1">
           <div>
             <h1 className="text-title-lg text-grayscale-1000">
               안녕하세요 {homeSummary.userName}님!
@@ -73,7 +73,7 @@ export function HomeScreen() {
           </div>
         </section>
 
-        <section className="mt-4 flex min-h-20 items-center justify-between bg-background px-5">
+        <section className="mt-4 flex min-h-20 items-center justify-between bg-background px-5 rounded-2xl border border-grayscale-100">
           <h2 className="text-title-sm text-grayscale-1000">
             {homeSummary.userName}님의 총 자산
           </h2>
@@ -82,7 +82,7 @@ export function HomeScreen() {
           </p>
         </section>
 
-        <section className="mt-4 bg-background px-5 py-5">
+        <section className="mt-4 bg-background px-5 py-5 rounded-2xl border border-grayscale-100">
           <div className="flex items-center justify-between">
             <h2 className="text-title-sm text-grayscale-1000">
               이번 달 예상 상태
@@ -93,16 +93,17 @@ export function HomeScreen() {
               {riskLevelLabels[riskLevel]}
             </span>
           </div>
-          <div className="mt-8">
+          <div aria-hidden="true" className="mt-4 h-px bg-grayscale-100" />
+          {/* <div className="mt-8">
             <p className="text-body-md text-grayscale-800">
               월말 예상 잔액
             </p>
             <p className="text-body-lg mt-1 text-grayscale-1000">
               {formatWon(homeSummary.expectedBalance)}
             </p>
-          </div>
+          </div> */}
 
-          <div className="mt-8">
+          <div className="mt-4">
             <p className="text-body-md text-grayscale-800">
               예상 위험이 있어요
             </p>

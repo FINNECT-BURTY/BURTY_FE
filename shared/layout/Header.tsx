@@ -32,9 +32,9 @@ export function Header({
 }: HeaderProps) {
   return (
     <header
-      className={`flex h-16 shrink-0 items-center bg-background px-6 ${
+      className={`${className} flex h-16 shrink-0 items-center bg-main-background px-6 ${
         sticky ? "sticky top-0 z-10" : ""
-      } ${className}`}
+      }`}
     >
       <div className={leftClassName}>{leftSlot}</div>
       {title !== undefined ? <div className={titleClassName}>{title}</div> : null}

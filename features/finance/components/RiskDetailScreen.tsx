@@ -46,7 +46,7 @@ export function RiskDetailScreen() {
   };
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <Header
         leftSlot={<HeaderBackButton onClick={handleBack} />}
         rightSlot={<div aria-hidden="true" className="size-10" />}
@@ -54,17 +54,17 @@ export function RiskDetailScreen() {
       />
 
       <section className="min-h-0 flex-1 overflow-y-auto px-6 pb-7 pt-4">
-        <article className="bg-background px-5 pt-5">
+        <article className="bg-background px-5 pt-5 rounded-2xl shadow-1">
           <h1 className="text-title-md text-grayscale-1000">
             00님 예상 위험이 있어요
           </h1>
           <p className="text-body-md mt-1 text-grayscale-900">
             25일에 -12,000원이 부족할 예정이에요
           </p>
-          <AssetFlowChart className="h-[164px]" />
+          <AssetFlowChart className="mt-2" interactive />
         </article>
 
-        <article className="mt-6 bg-background px-5 py-4">
+        <article className="mt-6 bg-background px-5 py-4 rounded-2xl border border-grayscale-100">
           <h2 className="text-title-sm text-grayscale-1000">
             주요 원인을 분석해 봤어요
           </h2>
@@ -110,7 +110,7 @@ export function RiskDetailScreen() {
           </div>
         </article>
 
-        <article className="mt-6 bg-background px-5 py-4">
+        <article className="mt-6 bg-background px-5 py-4 rounded-2xl border border-grayscale-100">
           <h2 className="text-title-sm text-grayscale-1000">
             원인을 설명해 드릴게요
           </h2>
@@ -120,7 +120,7 @@ export function RiskDetailScreen() {
           </p>
         </article>
 
-        <article className="mt-6 bg-background px-5 py-4">
+        <article className="mt-6 bg-background px-5 py-4 rounded-2xl border border-grayscale-100">
           <h2 className="text-title-sm text-grayscale-1000">주의해 주세요</h2>
           <p className="text-body-md mt-2 text-grayscale-900">
             이 상태로는 결제 실패 가능성이 있어요. 연체 수수료가 발생할

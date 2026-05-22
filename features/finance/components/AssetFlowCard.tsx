@@ -5,7 +5,7 @@ import { AssetFlowChart } from "@/features/finance/components/AssetFlowChart";
 
 export function AssetFlowCard() {
   return (
-    <section className="bg-background px-4 py-5">
+    <section className="rounded-2xl bg-background px-4 py-5 shadow-1">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-title-md text-grayscale-1000">
@@ -30,7 +30,7 @@ export function AssetFlowCard() {
         </Link>
       </div>
 
-      <AssetFlowChart className="mt-2 h-[148px]" />
+      <AssetFlowChart className="mt-2" interactive />
     </section>
   );
 }

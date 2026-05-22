@@ -104,7 +104,7 @@ export function MyPageScreen() {
   ];
 
   return (
-    <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
+    <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <MainHeader />
 
       <section className="min-h-0 flex-1 overflow-y-auto pb-4">
@@ -126,20 +126,23 @@ export function MyPageScreen() {
             const isLast = index === menuSections.length - 1;
 
             return (
-              <section
-                className={`${isLast ? "" : "pb-4"} ${
-                  index === 0 ? "" : "pt-7"
-                }`}
-                key={section.title}
-              >
-                <h2 className="text-title-sm text-grayscale-1000">
-                  {section.title}
-                </h2>
-                <div className="mt-2">
-                  {section.items.map((item) => (
-                    <MenuRow item={item} key={item.label} />
-                  ))}
+              <section key={section.title}>
+                <div className={index === 0 ? "" : "pt-7"}>
+                  <h2 className="text-title-sm text-grayscale-1000">
+                    {section.title}
+                  </h2>
+                  <div className="mt-2">
+                    {section.items.map((item) => (
+                      <MenuRow item={item} key={item.label} />
+                    ))}
+                  </div>
                 </div>
+                {isLast ? null : (
+                  <div
+                    aria-hidden="true"
+                    className="mt-7 h-px bg-grayscale-100"
+                  />
+                )}
               </section>
             );
           })}
