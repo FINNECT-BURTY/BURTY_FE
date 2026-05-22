@@ -58,12 +58,7 @@ export function MainRouteGuard({ children }: MainRouteGuardProps) {
   }, [router]);
 
   if (authStatus !== "authenticated") {
-    return (
-      <LoadingScreen
-        description="잠시만 기다려 주세요"
-        title="로그인 상태를 확인하고 있어요"
-      />
-    );
+    return <LoadingScreen />;
   }
 
   return <>{children}</>;

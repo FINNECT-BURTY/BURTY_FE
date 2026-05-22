@@ -6,22 +6,22 @@ import { Header, HeaderBackButton } from "@/shared/layout/Header";
 import { BottomActionButton } from "@/shared/ui/BottomActionButton";
 
 type ErrorScreenProps = Readonly<{
-  headerTitle: string;
-  title: string;
-  description: string;
-  retryLabel: string;
-  homeLabel: string;
+  headerTitle?: string;
+  title?: string;
+  description?: string;
+  retryLabel?: string;
+  homeLabel?: string;
   homeHref?: string;
   onBack?: () => void;
   onRetry: () => void;
 }>;
 
 export function ErrorScreen({
-  headerTitle,
-  title,
-  description,
-  retryLabel,
-  homeLabel,
+  headerTitle = "오류 발생",
+  title = "버티가 잠시 헤매고 있어요",
+  description = "다시 시도하면 금방 돌아올 거예요",
+  retryLabel = "다시 시도하기",
+  homeLabel = "홈으로 돌아가기",
   homeHref = "/",
   onBack,
   onRetry,

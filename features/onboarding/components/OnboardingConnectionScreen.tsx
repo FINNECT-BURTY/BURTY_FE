@@ -24,12 +24,7 @@ export function OnboardingConnectionScreen({
   const [isConnecting, setIsConnecting] = useState(false);
 
   if (isConnecting) {
-    return (
-      <LoadingScreen
-        description={"사용자 동의 없이\n이체, 결제, 대출은 실행되지 않아요"}
-        title="자산을 연결하고 있어요"
-      />
-    );
+    return <LoadingScreen />;
   }
 
   return (
