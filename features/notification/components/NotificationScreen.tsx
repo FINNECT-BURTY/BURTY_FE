@@ -91,6 +91,7 @@ export function NotificationScreen() {
   return (
     <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
       <Header
+        className="!bg-background"
         leftSlot={<HeaderBackButton onClick={handleBack} />}
         rightSlot={<div aria-hidden="true" className="size-10" />}
         title="알림"

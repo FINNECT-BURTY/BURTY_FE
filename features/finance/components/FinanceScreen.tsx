@@ -81,7 +81,7 @@ export function FinanceScreen() {
   const visibleSchedules = getVisibleSchedules(selectedFilter);
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <MainHeader />
 
       <section className="min-h-0 flex-1 overflow-y-auto px-6 pb-7 pt-2">
@@ -91,12 +91,12 @@ export function FinanceScreen() {
           <AssetFlowCard />
         </div>
 
-        <section className="mt-1">
+        <section className="mt-6">
           <h2 className="text-title-md text-grayscale-1000">
             지출 및 수입 일정
           </h2>
 
-          <div className="mt-3 flex gap-2">
+          <div className="mt-2 flex gap-2">
             {filterItems.map((item) => {
               const isSelected = item.value === selectedFilter;
 
@@ -120,7 +120,7 @@ export function FinanceScreen() {
           <div className="mt-4 space-y-4">
             {visibleSchedules.map((item) => (
               <article
-                className="flex min-h-[72px] items-center justify-between bg-background px-5 py-5"
+                className="flex min-h-[72px] items-center justify-between bg-background px-5 py-5 rounded-2xl border border-grayscale-100"
                 key={item.id}
               >
                 <div className="min-w-0">

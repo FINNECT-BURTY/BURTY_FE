@@ -58,13 +58,13 @@ export function GrantScreen() {
   const visiblePrograms = getVisiblePrograms(selectedCategory);
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <MainHeader />
 
       <section className="min-h-0 flex-1 overflow-y-auto px-6 pb-7">
         <h1 className="text-title-md text-grayscale-1000">지원금 알아보기</h1>
 
-        <article className="mt-4 bg-background px-5 py-5">
+        <article className="mt-4 bg-background px-5 py-5 rounded-2xl shadow-1">
           <h2 className="text-title-md text-grayscale-1000">
             3일 뒤 신청 마감되는 지원 정책이 있어요
           </h2>
@@ -117,7 +117,7 @@ export function GrantScreen() {
           <div className="mt-4 space-y-4">
             {visiblePrograms.map((program) => (
               <article
-                className="flex min-h-25 items-center justify-between gap-5 bg-background px-5 py-5"
+                className="flex min-h-25 items-center justify-between gap-5 bg-background px-5 py-5 rounded-2xl border border-grayscale-100"
                 key={`${program.category}-${program.title}`}
               >
                 <div className="min-w-0">

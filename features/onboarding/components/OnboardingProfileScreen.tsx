@@ -104,14 +104,11 @@ export function OnboardingProfileScreen({
   if (hasSubmitError) {
     return (
       <ErrorScreen
-        description="입력값과 연결 상태를 확인한 뒤 다시 시도해주세요"
         headerTitle="추가 정보"
         homeHref="/onboarding?step=entry"
         homeLabel="처음으로 돌아가기"
         onBack={() => setHasSubmitError(false)}
         onRetry={() => setHasSubmitError(false)}
-        retryLabel="다시 시도하기"
-        title="추가 정보를 저장하지 못했어요"
       />
     );
   }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { backendFetch } from "@/shared/api/backendFetch";
+import { useCurrentUser } from "@/shared/auth/currentUser";
 import { BottomNavigation } from "@/shared/layout/BottomNavigation";
 import { MainHeader } from "@/shared/layout/MainHeader";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
@@ -53,6 +54,7 @@ function ProfileAvatar() {
 
 export function MyPageScreen() {
   const router = useRouter();
+  const { user } = useCurrentUser();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -104,13 +106,15 @@ export function MyPageScreen() {
   ];
 
   return (
-    <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
+    <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <MainHeader />
 
       <section className="min-h-0 flex-1 overflow-y-auto pb-4">
         <section className="flex flex-col items-center py-5 text-center">
           <ProfileAvatar />
-          <h1 className="text-title-md mt-3 text-grayscale-1000">김OO님</h1>
+          <h1 className="text-title-md mt-3 text-grayscale-1000">
+            {user.displayName}님
+          </h1>
           <button
             className="text-body-md mt-4 rounded-3xl border border-grayscale-200 px-4 py-2 text-grayscale-800"
             type="button"
@@ -126,20 +130,23 @@ export function MyPageScreen() {
             const isLast = index === menuSections.length - 1;
 
             return (
-              <section
-                className={`${isLast ? "" : "pb-4"} ${
-                  index === 0 ? "" : "pt-7"
-                }`}
-                key={section.title}
-              >
-                <h2 className="text-title-sm text-grayscale-1000">
-                  {section.title}
-                </h2>
-                <div className="mt-2">
-                  {section.items.map((item) => (
-                    <MenuRow item={item} key={item.label} />
-                  ))}
+              <section key={section.title}>
+                <div className={index === 0 ? "" : "pt-7"}>
+                  <h2 className="text-title-sm text-grayscale-1000">
+                    {section.title}
+                  </h2>
+                  <div className="mt-2">
+                    {section.items.map((item) => (
+                      <MenuRow item={item} key={item.label} />
+                    ))}
+                  </div>
                 </div>
+                {isLast ? null : (
+                  <div
+                    aria-hidden="true"
+                    className="mt-7 h-px bg-grayscale-100"
+                  />
+                )}
               </section>
             );
           })}
@@ -157,7 +164,7 @@ export function MyPageScreen() {
           onPrimary={handleLogout}
           onSecondary={handleCloseLogoutModal}
           primaryDisabled={isLoggingOut}
-          primaryLabel={isLoggingOut ? "로그아웃 중..." : "로그아웃"}
+          primaryLabel="로그아웃"
           secondaryLabel="취소"
           title="정말로 로그아웃하시겠습니까?"
         />

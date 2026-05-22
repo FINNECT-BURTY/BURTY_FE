@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+import { useCurrentUser } from "@/shared/auth/currentUser";
 import { BottomNavigation } from "@/shared/layout/BottomNavigation";
 import { MainHeader } from "@/shared/layout/MainHeader";
 import { BottomActionButton } from "@/shared/ui/BottomActionButton";
@@ -29,21 +30,22 @@ const alternativeSolutions: readonly AlternativeSolution[] = [
 
 export function SolutionScreen() {
   const router = useRouter();
+  const { user } = useCurrentUser();
 
   const handleResolve = () => {
     router.push("/solution/resolve");
   };
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <MainHeader />
 
       <section className="min-h-0 flex-1 overflow-y-auto px-6 pb-7">
         <h1 className="text-title-md text-grayscale-1000">솔루션</h1>
 
-        <article className="mt-4 bg-background px-5 py-5">
+        <article className="mt-4 bg-background px-5 py-5 rounded-2xl shadow-1">
           <h2 className="text-title-md text-grayscale-1000">
-            00님 지금 필요한 솔루션이 있어요
+            {user.displayName}님 지금 필요한 솔루션이 있어요
           </h2>
           <p className="text-body-md mt-1 text-grayscale-900">
             50,000원을 확보할 수 있어요
@@ -75,7 +77,7 @@ export function SolutionScreen() {
           <div className="mt-4 space-y-4">
             {alternativeSolutions.map((solution) => (
               <button
-                className="flex min-h-25 w-full items-center justify-between bg-background px-5 py-5 text-left"
+                className="flex min-h-25 w-full items-center justify-between bg-background px-5 py-5 text-left rounded-2xl border border-grayscale-100"
                 key={solution.title}
                 type="button"
               >

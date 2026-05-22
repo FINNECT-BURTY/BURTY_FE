@@ -1,15 +1,20 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
 import { AssetFlowChart } from "@/features/finance/components/AssetFlowChart";
+import { useCurrentUser } from "@/shared/auth/currentUser";
 
 export function AssetFlowCard() {
+  const { user } = useCurrentUser();
+
   return (
-    <section className="bg-background px-4 py-5">
+    <section className="rounded-2xl bg-background px-4 py-5 shadow-1">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-title-md text-grayscale-1000">
-            00님 예상 위험이 있어요
+            {user.displayName}님 예상 위험이 있어요
           </h2>
           <p className="text-body-md mt-1 text-grayscale-900">
             25일에 -12,000원이 부족할 예정이에요
@@ -30,7 +35,7 @@ export function AssetFlowCard() {
         </Link>
       </div>
 
-      <AssetFlowChart className="mt-2 h-[148px]" />
+      <AssetFlowChart className="mt-2" interactive />
     </section>
   );
 }

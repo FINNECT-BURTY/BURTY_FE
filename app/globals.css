@@ -25,6 +25,8 @@
   --orange: #f96617;
 
   --background: #fcfcfc;
+  --main-background: #f6f7f7;
+  --effect-shadow-1: 0 0 8px rgb(234 234 234 / 80%);
 }
 
 @theme inline {
@@ -52,6 +54,9 @@
   --color-orange: #f96617;
 
   --color-background: var(--background);
+  --color-main-background: var(--main-background);
+
+  --shadow-1: var(--effect-shadow-1);
 
   --font-sans: var(--font-pretendard);
 }
