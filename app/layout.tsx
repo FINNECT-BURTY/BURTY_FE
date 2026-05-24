@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "AI 생활금융 에이전트",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "Berty",
   },
   // TODO: Open Graph 추가
@@ -32,7 +32,6 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#181919",
-  viewportFit: "cover",
 };
 
 export default function RootLayout({
