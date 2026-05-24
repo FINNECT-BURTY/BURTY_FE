@@ -68,10 +68,10 @@ export function OnboardingEntry() {
       <header className="flex justify-center">
         <Image
           alt="BURTY"
-          height={140}
+          height={40}
           priority
           src="/icons/onboarding/logo.svg"
-          width={140}
+          width={160}
         />
       </header>
 

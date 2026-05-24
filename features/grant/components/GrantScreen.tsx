@@ -16,6 +16,7 @@ import {
   resolvePolicyUrl,
 } from "@/features/grant/lib/policyHelpers";
 import { BottomNavigation } from "@/shared/layout/BottomNavigation";
+import { LoadingScreen } from "@/shared/layout/LoadingScreen";
 import { MainHeader } from "@/shared/layout/MainHeader";
 import { BottomActionButton } from "@/shared/ui/BottomActionButton";
 
@@ -114,6 +115,10 @@ export function GrantScreen() {
     : null;
   const featuredUrl = featured ? resolvePolicyUrl(featured) : null;
 
+  if (isInitialLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <MainHeader />
@@ -121,13 +126,7 @@ export function GrantScreen() {
       <section className="min-h-0 flex-1 overflow-y-auto px-6 pb-7">
         <h1 className="text-title-md text-grayscale-1000">지원금 알아보기</h1>
 
-        {isInitialLoading ? (
-          <p className="text-body-md mt-8 text-center text-grayscale-700">
-            지원 정책을 불러오고 있어요...
-          </p>
-        ) : null}
-
-        {!isInitialLoading && featured ? (
+        {featured ? (
           <article className="mt-4 bg-background px-5 py-5 rounded-2xl shadow-1">
             <h2 className="text-title-md text-grayscale-1000">
               {buildFeaturedHeadline(featuredDaysUntilDeadline)}
@@ -196,9 +195,20 @@ export function GrantScreen() {
 
           <div className="mt-4 space-y-4">
             {isListLoading && visiblePolicies.length === 0 ? (
-              <p className="text-body-md py-8 text-center text-grayscale-700">
-                지원 정책을 불러오는 중이에요...
-              </p>
+              <div
+                aria-busy="true"
+                aria-live="polite"
+                className="flex justify-center py-12"
+                role="status"
+              >
+                <div
+                  aria-hidden="true"
+                  className="animate-loading-spin size-10 rounded-full bg-[conic-gradient(var(--yellow-400)_0deg_225deg,var(--grayscale-100)_225deg_360deg)] p-[5px]"
+                >
+                  <div className="size-full rounded-full bg-main-background" />
+                </div>
+                <span className="sr-only">지원 정책을 불러오는 중이에요</span>
+              </div>
             ) : null}
 
             {!isListLoading && visiblePolicies.length === 0 ? (
