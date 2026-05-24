@@ -29,6 +29,7 @@ export function ErrorScreen({
   return (
     <main className="flex min-h-0 flex-1 flex-col bg-background text-grayscale-1000">
       <Header
+        className="!bg-background"
         leftSlot={onBack ? <HeaderBackButton onClick={onBack} /> : null}
         title={headerTitle}
       />

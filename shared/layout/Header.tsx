@@ -32,7 +32,7 @@ export function Header({
 }: HeaderProps) {
   return (
     <header
-      className={`flex h-16 shrink-0 items-center bg-main-background px-6 ${
+      className={`flex min-h-16 shrink-0 items-center bg-main-background px-6 pt-[env(safe-area-inset-top)] ${
         sticky ? "sticky top-0 z-10" : ""
       } ${className}`}
     >

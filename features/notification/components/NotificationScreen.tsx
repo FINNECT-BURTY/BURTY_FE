@@ -44,16 +44,25 @@ const previousNotifications: readonly NotificationItem[] = [
   },
 ];
 
+type NotificationListVariant = "new" | "previous";
+
+const notificationItemClassNames: Record<NotificationListVariant, string> = {
+  new: "bg-background shadow-1 border border-grayscale-100",
+  previous: "bg-main-background border border-grayscale-100",
+};
+
 function NotificationList({
   items,
+  variant,
 }: Readonly<{
   items: readonly NotificationItem[];
+  variant: NotificationListVariant;
 }>) {
   return (
     <ul className="mt-2 space-y-2">
       {items.map((item) => (
         <li
-          className="flex items-end justify-between gap-5 py-5 px-4"
+          className={`flex items-end justify-between gap-5 rounded-2xl py-5 px-4 ${notificationItemClassNames[variant]}`}
           key={`${item.category}-${item.message}`}
         >
           <div className="min-w-0">
@@ -89,9 +98,9 @@ export function NotificationScreen() {
   };
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <Header
-        className="!bg-background"
+        className="!bg-main-background"
         leftSlot={<HeaderBackButton onClick={handleBack} />}
         rightSlot={<div aria-hidden="true" className="size-10" />}
         title="알림"
@@ -100,12 +109,12 @@ export function NotificationScreen() {
       <section className="min-h-0 flex-1 overflow-y-auto px-8 pb-12 pt-5">
         <section>
           <h1 className="text-title-sm text-grayscale-1000">새로운 알림</h1>
-          <NotificationList items={newNotifications} />
+          <NotificationList items={newNotifications} variant="new" />
         </section>
 
         <section className="mt-4">
           <h2 className="text-title-sm text-grayscale-1000">지난 알림</h2>
-          <NotificationList items={previousNotifications} />
+          <NotificationList items={previousNotifications} variant="previous" />
         </section>
       </section>
     </main>

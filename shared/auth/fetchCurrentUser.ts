@@ -8,9 +8,9 @@ type CurrentUserResponse = Readonly<{
 
 const AUTH_ME_ENDPOINT = "/api/v1/auth/me";
 
-// TODO: 백엔드에서 프로필 조회 endpoint를 받으면 여기에 추가한다.
-// 예: "/api/v1/users/me/profile"
-const USER_PROFILE_ENDPOINTS: readonly string[] = [];
+// /auth/me 응답은 userId / profileComplete 만 포함하므로
+// 표시 이름은 별도 프로필 엔드포인트에서 보충한다.
+const USER_PROFILE_ENDPOINTS: readonly string[] = ["/api/v1/users/me/name"];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;

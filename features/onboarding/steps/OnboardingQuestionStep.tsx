@@ -23,10 +23,10 @@ function getGridClassName(optionCount: number) {
 
 function getOptionClassName(selected: boolean) {
   const baseClassName =
-    "text-title-md flex h-40 items-center justify-center rounded-3xl text-center shadow-[0_2px_12px_rgba(30,30,30,0.04)]";
+    "text-title-md flex h-42 items-center justify-center rounded-3xl text-center transition-shadow";
   const stateClassName = selected
-    ? "bg-yellow-300 text-grayscale-1000"
-    : "bg-background text-grayscale-900";
+    ? "bg-yellow-300 text-grayscale-1000 shadow-[0_0_8px_rgba(255,237,158,0.8)]"
+    : "bg-background text-grayscale-900 border border-grayscale-100";
 
   return `${baseClassName} ${stateClassName}`;
 }
@@ -81,10 +81,8 @@ export function OnboardingQuestionStep({
       <BottomActionBar
         actionLabel={currentStep === totalSteps ? "확인" : "다음"}
         actionTextStyle="title-sm"
-        bottomSpacing="compact"
         className="mt-auto"
         onAction={onNext}
-        topSpacing="large"
       />
     </main>
   );

@@ -13,9 +13,17 @@ export function AssetFlowCard() {
     <section className="rounded-2xl bg-background px-4 py-5 shadow-1">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-title-md text-grayscale-1000">
-            {user.displayName}님 예상 위험이 있어요
-          </h2>
+          <div className="flex items-center gap-1.5">
+            <Image
+              alt=""
+              height={20}
+              src="/icons/main/warning-yellow.svg"
+              width={20}
+            />
+            <h2 className="text-title-md text-grayscale-1000">
+              {user.displayName}님 예상 위험이 있어요
+            </h2>
+          </div>
           <p className="text-body-md mt-1 text-grayscale-900">
             25일에 -12,000원이 부족할 예정이에요
           </p>

@@ -250,12 +250,12 @@ export function AssetFlowChart({
                 <ReferenceLine
                   ifOverflow="visible"
                   segment={riskLineSegment ?? undefined}
-                  stroke="var(--yellow-500)"
+                  stroke="var(--red)"
                   strokeDasharray="4 1"
                   strokeLinecap="round"
                 />
                 <ReferenceDot
-                  fill="var(--yellow-400)"
+                  fill="var(--red)"
                   ifOverflow="visible"
                   r={4}
                   stroke="var(--background)"
@@ -268,7 +268,7 @@ export function AssetFlowChart({
 
             {visibleRiskPoint ? (
               <text
-                fill="var(--grayscale-900)"
+                fill="var(--red)"
                 fontSize="11"
                 textAnchor="middle"
                 x={selectedRange ? "50%" : "78%"}

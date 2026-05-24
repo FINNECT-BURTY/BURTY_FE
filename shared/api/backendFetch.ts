@@ -1,28 +1,101 @@
 import { getPublicApiBaseUrl } from "@/shared/api/config";
+import {
+  clearAuthTokens,
+  clearSessionMarker,
+  getAccessToken,
+  getRefreshToken,
+  setAuthTokens,
+} from "@/shared/auth/tokenStorage";
 
 type BackendFetchInit = Omit<RequestInit, "credentials">;
 
-async function refreshSession(base: string): Promise<boolean> {
-  const response = await fetch(`${base}/api/v1/auth/refresh`, {
-    body: "{}",
-    credentials: "include",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-  });
+type RefreshTokenPair = Readonly<{
+  accessToken?: string;
+  refreshToken?: string;
+}>;
 
-  if (!response.ok) return false;
+type RefreshResponse = Readonly<{
+  success?: boolean;
+  data?: RefreshTokenPair | null;
+}>;
 
-  const payload = (await response.json().catch(() => null)) as
-    | { success?: boolean }
-    | null;
-  return payload?.success === true;
+function buildHeaders(init: BackendFetchInit, accessToken: string | null) {
+  const baseHeaders: HeadersInit = {
+    Accept: "application/json",
+    ...init.headers,
+  };
+
+  if (!accessToken) return baseHeaders;
+
+  return {
+    ...baseHeaders,
+    Authorization: `Bearer ${accessToken}`,
+  };
 }
 
 /**
- * BURTY API 로 쿠키 인증 요청 (BFF 로그인 후 BURTY_ACCESS / BURTY_REFRESH).
+ * Refresh token 으로 새 access/refresh 쌍을 발급받는다.
+ * - body 에 refreshToken 을 명시 전송 (SPA 이메일 로그인 경로).
+ * - 쿠키 기반 BFF 인증 사용자(소셜 로그인) 도 함께 처리되도록 credentials: include 유지.
+ * - 회전된 토큰이 응답 본문에 오면 localStorage 를 갱신한다.
+ */
+async function refreshSession(base: string): Promise<boolean> {
+  const storedRefreshToken = getRefreshToken();
+
+  let response: Response;
+  try {
+    response = await fetch(`${base}/api/v1/auth/refresh`, {
+      body: JSON.stringify(
+        storedRefreshToken ? { refreshToken: storedRefreshToken } : {},
+      ),
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+  } catch {
+    return false;
+  }
+
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      clearAuthTokens();
+      clearSessionMarker();
+    }
+    return false;
+  }
+
+  const payload = (await response.json().catch(() => null)) as
+    | RefreshResponse
+    | null;
+
+  if (payload?.success !== true) {
+    return false;
+  }
+
+  const nextAccessToken = payload.data?.accessToken;
+  const nextRefreshToken = payload.data?.refreshToken;
+
+  if (nextAccessToken && nextRefreshToken) {
+    setAuthTokens({
+      accessToken: nextAccessToken,
+      refreshToken: nextRefreshToken,
+    });
+  }
+
+  return true;
+}
+
+/**
+ * BURTY API 호출 래퍼.
+ *
+ * - 모든 요청에 `credentials: "include"` 를 사용해 BFF 소셜 로그인 쿠키 인증을 지원한다.
+ * - 클라이언트가 토큰을 보관하고 있으면 (`shared/auth/tokenStorage`) `Authorization: Bearer ...`
+ *   헤더를 함께 보낸다. 이메일 SPA 로그인 사용자가 cross-site 쿠키 차단 환경에서도 동작한다.
+ * - 401 응답을 받으면 refresh 를 시도하고, 회전된 토큰으로 원 요청을 한 번 더 보낸다.
+ *   refresh 자체나 logout 요청은 재시도 대상에서 제외한다 (무한 루프 방지).
  */
 export async function backendFetch(
   path: string,
@@ -30,15 +103,15 @@ export async function backendFetch(
 ): Promise<Response> {
   const base = getPublicApiBaseUrl();
 
-  const url = path.startsWith("http") ? path : `${base}${path.startsWith("/") ? path : `/${path}`}`;
+  const url = path.startsWith("http")
+    ? path
+    : `${base}${path.startsWith("/") ? path : `/${path}`}`;
 
+  const accessToken = getAccessToken();
   const response = await fetch(url, {
     ...init,
     credentials: "include",
-    headers: {
-      Accept: "application/json",
-      ...init.headers,
-    },
+    headers: buildHeaders(init, accessToken),
   });
 
   const shouldRetryWithRefresh =
@@ -58,9 +131,6 @@ export async function backendFetch(
   return fetch(url, {
     ...init,
     credentials: "include",
-    headers: {
-      Accept: "application/json",
-      ...init.headers,
-    },
+    headers: buildHeaders(init, getAccessToken()),
   });
 }

@@ -3,12 +3,12 @@
 import { useState } from "react";
 
 import { OnboardingExitConfirmModal } from "@/features/onboarding/components/OnboardingExitConfirmModal";
-import { LoadingScreen } from "@/shared/layout/LoadingScreen";
 import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
 import { BottomActionBar } from "@/shared/ui/BottomActionBar";
 
 type OnboardingConnectionScreenProps = Readonly<{
   onBack: () => void;
+  onComplete: () => void;
 }>;
 
 const connectionBenefits = [
@@ -19,13 +19,9 @@ const connectionBenefits = [
 
 export function OnboardingConnectionScreen({
   onBack,
+  onComplete,
 }: OnboardingConnectionScreenProps) {
   const [showRequiredDialog, setShowRequiredDialog] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-
-  if (isConnecting) {
-    return <LoadingScreen />;
-  }
 
   return (
     <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
@@ -58,25 +54,22 @@ export function OnboardingConnectionScreen({
         <p className="text-caption mt-4 text-grayscale-1000">
           은행 수준으로 안전하게 보호됩니다
         </p>
-        <p className="text-body-md mx-auto text-grayscale-900">
-          사용자 동의 없이 이체, 결제, 대출 신청은 실행되지 않아요.
-        </p>
       </section>
 
       <BottomActionBar
         actionLabel="연결하기"
         actionTextStyle="title-sm"
-        onAction={() => setIsConnecting(true)}
+        onAction={onComplete}
         onSecondary={() => setShowRequiredDialog(true)}
         secondaryLabel="나중에 할게요"
-        secondaryPosition="above"
+        secondaryPosition="below"
       />
 
       {showRequiredDialog ? (
         <OnboardingExitConfirmModal
           onPrimary={() => {
             setShowRequiredDialog(false);
-            setIsConnecting(true);
+            onComplete();
           }}
           onSecondary={() => setShowRequiredDialog(false)}
           primaryLabel="연결하기"
