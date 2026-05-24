@@ -17,7 +17,7 @@ export function AssetFlowCard() {
             <Image
               alt=""
               height={20}
-              src="/icons/main/warning-yellow.svg"
+              src="/icons/main/warning-red.svg"
               width={20}
             />
             <h2 className="text-title-md text-grayscale-1000">

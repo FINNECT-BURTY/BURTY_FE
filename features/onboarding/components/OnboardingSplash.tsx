@@ -3,7 +3,10 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-const SPLASH_STAGE_TIMINGS_MS = [1200, 3800, 6400] as const;
+import {
+  SPLASH_STAGE_TIMINGS_MS,
+} from "@/features/onboarding/constants/splash";
+
 const SPLASH_TEXT_TOP_CLASS_NAME = "top-[41.25%]";
 const SPLASH_LOGO_TOP_CLASS_NAME = "top-[39.8%]";
 const SPLASH_SCENES = [

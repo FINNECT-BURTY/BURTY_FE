@@ -1,7 +1,8 @@
 import { backendFetch, hydrateAuthTokensFromCookieSession } from "@/shared/api/backendFetch";
 import type { CurrentUser } from "@/shared/auth/currentUser";
 import { getCachedDisplayName } from "@/shared/auth/displayNameCache";
-import { hasAuthTokens } from "@/shared/auth/tokenStorage";
+import { ensureAuthTokensForUser } from "@/shared/auth/ensureAuthTokens";
+import { clearAuthTokens } from "@/shared/auth/tokenStorage";
 
 type CurrentUserResponse = Readonly<{
   success: boolean;
@@ -110,10 +111,34 @@ async function fetchJson(endpoint: string) {
   return payload.data;
 }
 
-async function fetchDisplayNameFromNameEndpoint() {
+async function fetchNameFromApi() {
+  const response = await backendFetch(USER_NAME_ENDPOINT, {
+    cache: "no-store",
+    method: "GET",
+  });
+  const payload = (await response.json().catch(() => null)) as
+    | (CurrentUserResponse & { errorCode?: string | null })
+    | null;
+
+  if (!response.ok || payload?.success !== true) {
+    return null;
+  }
+
+  return resolveDisplayName(payload.data);
+}
+
+async function fetchDisplayNameFromNameEndpoint(userId?: string) {
   try {
-    const data = await fetchJson(USER_NAME_ENDPOINT);
-    return resolveDisplayName(data);
+    await ensureAuthTokensForUser(userId);
+
+    const name = await fetchNameFromApi();
+    if (name) return name;
+
+    // Bearer 가 남아 있으나 쿠키 세션과 어긋난 경우 한 번 더 쿠키 기준으로 맞춘다.
+    clearAuthTokens();
+    await hydrateAuthTokensFromCookieSession();
+
+    return await fetchNameFromApi();
   } catch {
     return null;
   }
@@ -123,16 +148,12 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const authData = await fetchJson(AUTH_ME_ENDPOINT);
   if (!authData) return null;
 
-  // 소셜(BFF) 로그인은 HttpOnly 쿠키만 있고 localStorage Bearer 가 없을 수 있다.
-  // Swagger: /users/me/name 은 bearerAuth, /auth/refresh 는 쿠키 refresh 로 body 토큰 발급.
-  if (!hasAuthTokens()) {
-    await hydrateAuthTokensFromCookieSession();
-  }
-
   const userId = resolveUserId(authData);
+  await ensureAuthTokensForUser(userId);
+
   const displayName =
     resolveDisplayName(authData) ??
-    (await fetchDisplayNameFromNameEndpoint()) ??
+    (await fetchDisplayNameFromNameEndpoint(userId)) ??
     getCachedDisplayName(userId) ??
     "고객";
 
