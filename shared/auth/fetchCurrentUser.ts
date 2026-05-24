@@ -1,5 +1,8 @@
 import { backendFetch } from "@/shared/api/backendFetch";
+import { getPublicApiBaseUrl } from "@/shared/api/config";
 import type { CurrentUser } from "@/shared/auth/currentUser";
+import { getCachedDisplayName } from "@/shared/auth/displayNameCache";
+import { getAccessToken } from "@/shared/auth/tokenStorage";
 
 type CurrentUserResponse = Readonly<{
   success: boolean;
@@ -107,27 +110,56 @@ async function fetchJson(endpoint: string) {
   return payload.data;
 }
 
+async function fetchNamePayload(withBearer: boolean) {
+  const accessToken = withBearer ? getAccessToken() : null;
+  const headers: HeadersInit = { Accept: "application/json" };
+
+  if (withBearer && accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  const response = await fetch(`${getPublicApiBaseUrl()}${USER_NAME_ENDPOINT}`, {
+    cache: "no-store",
+    credentials: "include",
+    headers,
+    method: "GET",
+  });
+
+  return (await response.json().catch(() => null)) as CurrentUserResponse | null;
+}
+
 async function fetchDisplayNameFromNameEndpoint() {
   try {
-    const data = await fetchJson(USER_NAME_ENDPOINT);
-    return resolveDisplayName(data);
+    // 소셜(BFF 쿠키) → 이메일(Bearer) 순으로 시도한다.
+    // backendFetch 는 만료된 localStorage 토큰을 함께 보내 name API 가 400 이 될 수 있다.
+    for (const withBearer of [false, true] as const) {
+      const payload = await fetchNamePayload(withBearer);
+      if (payload?.success !== true) continue;
+
+      const name = resolveDisplayName(payload.data);
+      if (name) return name;
+    }
   } catch {
     return null;
   }
+
+  return null;
 }
 
 export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const authData = await fetchJson(AUTH_ME_ENDPOINT);
   if (!authData) return null;
 
+  const userId = resolveUserId(authData);
   const displayName =
     resolveDisplayName(authData) ??
     (await fetchDisplayNameFromNameEndpoint()) ??
+    getCachedDisplayName(userId) ??
     "고객";
 
   return {
     displayName,
     profileComplete: resolveProfileComplete(authData),
-    userId: resolveUserId(authData),
+    userId,
   };
 }
