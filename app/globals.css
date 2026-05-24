@@ -14,11 +14,10 @@
 
   --espresso: #301c1b;
 
-  --yellow-500: #d7c05c;
-  --yellow-400: #f4dc70;
-  --yellow-300: #ffed9e;
-  --yellow-200: #fff5c8;
-  --yellow-100: #fffcf1;
+  --yellow-400: #FFEB60;
+  --yellow-300: #FFF294;
+  --yellow-200: #FFF8C7;
+  --yellow-100: #FFFEFA;
 
   --red: #eb1818;
   --green: #20a940;
@@ -43,7 +42,6 @@
 
   --color-espresso: var(--espresso);
 
-  --color-yellow-500: var(--yellow-500);
   --color-yellow-400: var(--yellow-400);
   --color-yellow-300: var(--yellow-300);
   --color-yellow-200: var(--yellow-200);

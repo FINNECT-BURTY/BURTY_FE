@@ -18,8 +18,10 @@ export default async function Page({
 
   return (
     <AuthCallbackClient
+      code={getSearchParamValue(params.code)}
       error={getSearchParamValue(params.error)}
       newUser={getSearchParamValue(params.newUser)}
+      profileComplete={getSearchParamValue(params.profileComplete)}
     />
   );
 }

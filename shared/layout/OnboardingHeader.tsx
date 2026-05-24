@@ -15,7 +15,7 @@ export function OnboardingHeader({
 }: HeaderProps) {
   return (
     <Header
-      className="bg-background"
+      className="!bg-background"
       leftSlot={onBack ? <HeaderBackButton onClick={onBack} /> : null}
       rightSlot={rightSlot}
       sticky

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { AssetFlowChart } from "@/features/finance/components/AssetFlowChart";
@@ -45,6 +46,10 @@ export function RiskDetailScreen() {
 
   const handleBack = () => {
     router.back();
+  };
+
+  const handleResolveRisk = () => {
+    router.push("/solution");
   };
 
   return (
@@ -113,9 +118,17 @@ export function RiskDetailScreen() {
         </article>
 
         <article className="mt-6 bg-background px-5 py-4 rounded-2xl border border-grayscale-100">
-          <h2 className="text-title-sm text-grayscale-1000">
-            원인을 설명해 드릴게요
-          </h2>
+          <div className="flex items-center gap-1.5">
+            <Image
+              alt=""
+              height={16}
+              src="/icons/main/pencil.svg"
+              width={16}
+            />
+            <h2 className="text-title-sm text-grayscale-1000">
+              원인을 설명해 드릴게요
+            </h2>
+          </div>
           <p className="text-body-md mt-2 text-grayscale-900">
             카드값과 월세가 같은 주에 빠져나가면서 부족이 발생합니다.
             25일은 지출이 집중되는 날입니다.
@@ -123,7 +136,15 @@ export function RiskDetailScreen() {
         </article>
 
         <article className="mt-6 bg-background px-5 py-4 rounded-2xl border border-grayscale-100">
-          <h2 className="text-title-sm text-grayscale-1000">주의해 주세요</h2>
+          <div className="flex items-center gap-1.5">
+            <Image
+              alt=""
+              height={16}
+              src="/icons/main/warning-orange.svg"
+              width={16}
+            />
+            <h2 className="text-title-sm text-grayscale-1000">주의해 주세요</h2>
+          </div>
           <p className="text-body-md mt-2 text-grayscale-900">
             이 상태로는 결제 실패 가능성이 있어요. 연체 수수료가 발생할
             수 있으니 주의하세요.
@@ -135,6 +156,7 @@ export function RiskDetailScreen() {
         actionLabel="지금 해결하기"
         bottomSpacing="compact"
         className="shrink-0 bg-background"
+        onAction={handleResolveRisk}
       />
     </main>
   );

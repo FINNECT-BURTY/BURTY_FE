@@ -4,62 +4,20 @@ import Image from "next/image";
 import { useState } from "react";
 
 import { OnboardingExitConfirmModal } from "@/features/onboarding/components/OnboardingExitConfirmModal";
+import {
+  agreementContents,
+  type AgreementId,
+  agreementItems,
+  type AgreementView,
+  type OnboardingAgreementScreenProps,
+} from "@/features/onboarding/constants/agreements";
+import { AgreementMarkdown } from "@/features/onboarding/ui/AgreementMarkdown";
 import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
 import { BottomActionBar } from "@/shared/ui/BottomActionBar";
 
-type AgreementId =
-  | "service"
-  | "privacy"
-  | "creditCollection"
-  | "creditTransfer"
-  | "benefit"
-  | "marketing";
-
-type AgreementItem = Readonly<{
-  id: AgreementId;
-  label: string;
-  description?: string;
-  required: boolean;
-}>;
-
-type AgreementView =
-  | Readonly<{ type: "list" }>
-  | Readonly<{ type: "detail"; item: AgreementItem }>;
-
-type OnboardingAgreementScreenProps = Readonly<{
-  onBackToEntry: () => void;
-  onComplete: () => void;
-}>;
-
-const agreementItems: readonly AgreementItem[] = [
-  { id: "service", label: "(필수) 서비스 이용약관 동의", required: true },
-  { id: "privacy", label: "(필수) 개인정보 처리 안내 확인", required: true },
-  {
-    id: "creditCollection",
-    label: "(필수) 개인신용정보 수집·이용 동의",
-    required: true,
-  },
-  {
-    id: "creditTransfer",
-    label: "(필수) 개인신용정보 전송요구 동의",
-    required: true,
-  },
-  {
-    id: "benefit",
-    label: "(선택) 맞춤 혜택 알림 수신",
-    description: "신청 가능한 지원금과 마감일을 알려드려요",
-    required: false,
-  },
-  {
-    id: "marketing",
-    label: "(선택) 마케팅 정보 수신 동의",
-    description: "기본 정보가 어떻게 사용되는지 확인해요",
-    required: false,
-  },
-];
-
-const agreementContent =
-  "이용 약관 동의 내용 나열이용 약관 동의 내용 나열이용 약관 동의 내용 나열이용 약관 동의 내용 나열이용 약관 동의 내용 나열이용 약관 동의 내용 나열이용 약관 동의 내용 나열이용 약관 동의 내용 나열이용 약관 동의 내용 나열";
+function getAgreementDetailTitle(label: string) {
+  return label.replace(/^\((필수|선택)\)\s*/, "");
+}
 
 function createInitialAgreementState() {
   return Object.fromEntries(
@@ -142,13 +100,9 @@ export function OnboardingAgreementScreen({
         />
         <section className="min-h-0 flex-1 overflow-y-auto px-6 mt-2 pb-6">
           <h1 className="text-title-sm text-grayscale-1000">
-            {view.item.label}
+            {getAgreementDetailTitle(view.item.label)}
           </h1>
-          <p className="text-caption mt-2 text-grayscale-800">
-            {Array.from({ length: 28 }, (_, index) => (
-              <span key={index}>{agreementContent}</span>
-            ))}
-          </p>
+          <AgreementMarkdown content={agreementContents[view.item.id]} />
         </section>
         <BottomActionBar
           actionLabel="확인"

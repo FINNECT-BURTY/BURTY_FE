@@ -1,5 +1,8 @@
 "use client";
 
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 import { useCurrentUser } from "@/shared/auth/currentUser";
 import { BottomNavigation } from "@/shared/layout/BottomNavigation";
 import { MainHeader } from "@/shared/layout/MainHeader";
@@ -35,6 +38,7 @@ function formatWon(value: number) {
 }
 
 export function HomeScreen() {
+  const router = useRouter();
   const { user } = useCurrentUser();
   const spendableRatio = Math.min(
     Math.max(homeSummary.spendableAmount / homeSummary.monthlyLimit, 0),
@@ -42,6 +46,10 @@ export function HomeScreen() {
   );
   const progressWidth = `${spendableRatio * 100}%`;
   const riskLevel = homeSummary.riskLevel;
+
+  const handleResolveRisk = () => {
+    router.push("/solution");
+  };
 
   return (
     <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
@@ -76,15 +84,6 @@ export function HomeScreen() {
           </div>
         </section>
 
-        <section className="mt-4 flex min-h-20 items-center justify-between bg-background px-5 rounded-2xl border border-grayscale-100">
-          <h2 className="text-title-sm text-grayscale-1000">
-            {user.displayName}님의 총 자산
-          </h2>
-          <p className="text-title-sm text-grayscale-900">
-            {formatWon(homeSummary.totalAsset)}
-          </p>
-        </section>
-
         <section className="mt-4 bg-background px-5 py-5 rounded-2xl border border-grayscale-100">
           <div className="flex items-center justify-between">
             <h2 className="text-title-sm text-grayscale-1000">
@@ -97,31 +96,48 @@ export function HomeScreen() {
             </span>
           </div>
           <div aria-hidden="true" className="mt-4 h-px bg-grayscale-100" />
-          {/* <div className="mt-8">
-            <p className="text-body-md text-grayscale-800">
-              월말 예상 잔액
-            </p>
-            <p className="text-body-lg mt-1 text-grayscale-1000">
-              {formatWon(homeSummary.expectedBalance)}
-            </p>
-          </div> */}
 
           <div className="mt-4">
-            <p className="text-body-md text-grayscale-800">
-              예상 위험이 있어요
-            </p>
+            <div className="flex items-center gap-1.5">
+              <Image
+                alt=""
+                height={16}
+                src="/icons/main/warning-orange.svg"
+                width={16}
+              />
+              <p className="text-body-md text-grayscale-800">
+                예상 위험이 있어요
+              </p>
+            </div>
             <p className="text-body-lg mt-1 text-grayscale-1000">
               {homeSummary.shortageDate}일에{" "}
               {formatWon(homeSummary.shortageAmount)} 부족할 예정이에요
             </p>
           </div>
-          {/* TODO: onClick 달기 */}
           <BottomActionButton
-              className="mt-6"
-              textStyle="title-sm"
-            >
-              지금 해결하기
-            </BottomActionButton>
+            className="mt-6"
+            onClick={handleResolveRisk}
+            textStyle="title-sm"
+          >
+            지금 해결하기
+          </BottomActionButton>
+        </section>
+
+        <section className="mt-4 flex min-h-20 items-center justify-between bg-background px-5 rounded-2xl border border-grayscale-100">
+          <div className="flex items-center gap-1.5">
+            <Image
+              alt=""
+              height={16}
+              src="/icons/main/money.svg"
+              width={16}
+            />
+            <h2 className="text-title-sm text-grayscale-1000">
+              {user.displayName}님의 총 자산
+            </h2>
+          </div>
+          <p className="text-title-sm text-grayscale-900">
+            {formatWon(homeSummary.totalAsset)}
+          </p>
         </section>
       </section>
       <BottomNavigation />
