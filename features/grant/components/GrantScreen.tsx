@@ -1,61 +1,118 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import {
+  fetchYouthPolicies,
+  type YouthPolicyDomain,
+  type YouthPolicySummary,
+} from "@/features/grant/api/youthPolicy";
+import {
+  extractHashtags,
+  formatPolicyDateKor,
+  getDaysUntil,
+  pickFeaturedPolicy,
+  resolvePolicyUrl,
+} from "@/features/grant/lib/policyHelpers";
 import { BottomNavigation } from "@/shared/layout/BottomNavigation";
 import { MainHeader } from "@/shared/layout/MainHeader";
 import { BottomActionButton } from "@/shared/ui/BottomActionButton";
 
-type GrantCategory = "all" | "finance" | "housing" | "life";
-
-type GrantProgram = Readonly<{
-  category: Exclude<GrantCategory, "all">;
-  deadline: string;
-  description: string;
-  title: string;
-}>;
+type CategoryFilter = "all" | YouthPolicyDomain;
 
 const categoryItems: readonly Readonly<{
   label: string;
-  value: GrantCategory;
+  value: CategoryFilter;
 }>[] = [
   { label: "전체", value: "all" },
   { label: "주거", value: "housing" },
   { label: "금융", value: "finance" },
-  { label: "생활비", value: "life" },
+  { label: "복지", value: "welfare" },
+  { label: "지원금", value: "subsidy" },
 ];
 
-const grantPrograms: readonly GrantProgram[] = [
-  {
-    category: "housing",
-    deadline: "마감 2026.04.23.",
-    description: "청년 전세 자금 대출 이자 지원",
-    title: "주거 지원",
-  },
-  {
-    category: "finance",
-    deadline: "마감 2026.04.23.",
-    description: "청년 전세 자금 대출 이자 지원",
-    title: "금융 지원",
-  },
-  {
-    category: "life",
-    deadline: "마감 2026.04.23.",
-    description: "생활 안정 비용 지원",
-    title: "생활비 지원",
-  },
-];
+const FEATURED_HEADLINE_FALLBACK = "지금 신청 가능한 지원 정책이 있어요";
+const LIST_PAGE_SIZE = 30;
+const ALL_FETCH_SIZE = 50;
 
-function getVisiblePrograms(category: GrantCategory) {
-  if (category === "all") return grantPrograms;
-  return grantPrograms.filter((program) => program.category === category);
+function buildFeaturedHeadline(daysUntilDeadline: number | null): string {
+  if (daysUntilDeadline === null) return FEATURED_HEADLINE_FALLBACK;
+  if (daysUntilDeadline <= 0) return "오늘 신청 마감되는 지원 정책이 있어요";
+  return `${daysUntilDeadline}일 뒤 신청 마감되는 지원 정책이 있어요`;
 }
+
+function openExternalUrl(url: string) {
+  if (typeof window === "undefined") return;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+type PoliciesByCategory = Partial<
+  Record<CategoryFilter, readonly YouthPolicySummary[]>
+>;
 
 export function GrantScreen() {
   const [selectedCategory, setSelectedCategory] =
-    useState<GrantCategory>("all");
-  const visiblePrograms = getVisiblePrograms(selectedCategory);
+    useState<CategoryFilter>("all");
+  const [policiesByCategory, setPoliciesByCategory] =
+    useState<PoliciesByCategory>({});
+  const [featured, setFeatured] = useState<YouthPolicySummary | null>(null);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isCategoryLoading, setIsCategoryLoading] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    void (async () => {
+      const data = await fetchYouthPolicies({ size: ALL_FETCH_SIZE });
+      if (!mounted) return;
+
+      setPoliciesByCategory((prev) => ({ ...prev, all: data }));
+      setFeatured(pickFeaturedPolicy(data));
+      setIsInitialLoading(false);
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory === "all") return;
+    if (policiesByCategory[selectedCategory]) return;
+
+    let mounted = true;
+
+    void (async () => {
+      setIsCategoryLoading(true);
+      const data = await fetchYouthPolicies({
+        domain: selectedCategory,
+        size: LIST_PAGE_SIZE,
+      });
+      if (!mounted) return;
+
+      setPoliciesByCategory((prev) => ({ ...prev, [selectedCategory]: data }));
+      setIsCategoryLoading(false);
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedCategory, policiesByCategory]);
+
+  const visiblePolicies = policiesByCategory[selectedCategory] ?? [];
+  const isListLoading = selectedCategory === "all"
+    ? isInitialLoading
+    : isCategoryLoading;
+
+  const featuredHashtags = useMemo(
+    () => (featured ? extractHashtags(featured) : []),
+    [featured],
+  );
+  const featuredDaysUntilDeadline = featured
+    ? getDaysUntil(featured.endDate)
+    : null;
+  const featuredUrl = featured ? resolvePolicyUrl(featured) : null;
 
   return (
     <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
@@ -64,36 +121,59 @@ export function GrantScreen() {
       <section className="min-h-0 flex-1 overflow-y-auto px-6 pb-7">
         <h1 className="text-title-md text-grayscale-1000">지원금 알아보기</h1>
 
-        <article className="mt-4 bg-background px-5 py-5 rounded-2xl shadow-1">
-          <h2 className="text-title-md text-grayscale-1000">
-            3일 뒤 신청 마감되는 지원 정책이 있어요
-          </h2>
-          <p className="text-body-md mt-1 text-grayscale-1000">
-            #주거지원&nbsp;&nbsp; #청년월세지원&nbsp;&nbsp; #월20만원
+        {isInitialLoading ? (
+          <p className="text-body-md mt-8 text-center text-grayscale-700">
+            지원 정책을 불러오고 있어요...
           </p>
+        ) : null}
 
-          <div className="mt-4 overflow-hidden rounded-xl bg-yellow-100">
-            <Image
-              alt="2025 서울시 청년월세지원 안내 배너"
-              className="h-auto w-full"
-              height={151}
-              priority
-              src="/icons/grant/example-image.svg"
-              width={286}
-            />
-          </div>
+        {!isInitialLoading && featured ? (
+          <article className="mt-4 bg-background px-5 py-5 rounded-2xl shadow-1">
+            <h2 className="text-title-md text-grayscale-1000">
+              {buildFeaturedHeadline(featuredDaysUntilDeadline)}
+            </h2>
+            <p className="text-body-md mt-1 line-clamp-2 text-grayscale-1000">
+              {featured.title}
+            </p>
+            {featuredHashtags.length > 0 ? (
+              <p className="text-body-md mt-1 text-grayscale-900">
+                {featuredHashtags.map((tag) => `#${tag}`).join("   ")}
+              </p>
+            ) : null}
 
-          <BottomActionButton className="mt-4" textStyle="title-sm">
-            신청하기
-          </BottomActionButton>
-        </article>
+            {/* TODO: 디자이너가 지원 정책용 일러스트/로고 전달하면 교체. */}
+            <div
+              aria-hidden="true"
+              className="mt-4 flex aspect-[286/151] w-full items-center justify-center overflow-hidden rounded-xl bg-yellow-100"
+            >
+              <Image
+                alt=""
+                className="h-16 w-16 opacity-60"
+                height={64}
+                src="/icons/logo/192.svg"
+                width={64}
+              />
+            </div>
 
-        <section className="mt-4">
+            <BottomActionButton
+              className="mt-4"
+              disabled={!featuredUrl}
+              onClick={() => {
+                if (featuredUrl) openExternalUrl(featuredUrl);
+              }}
+              textStyle="title-sm"
+            >
+              신청하기
+            </BottomActionButton>
+          </article>
+        ) : null}
+
+        <section className="mt-6">
           <h2 className="text-title-md text-grayscale-1000">
             다른 지원 제도도 소개해 드릴게요
           </h2>
 
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {categoryItems.map((item) => {
               const isSelected = item.value === selectedCategory;
 
@@ -115,30 +195,55 @@ export function GrantScreen() {
           </div>
 
           <div className="mt-4 space-y-4">
-            {visiblePrograms.map((program) => (
-              <article
-                className="flex min-h-25 items-center justify-between gap-5 bg-background px-5 py-5 rounded-2xl border border-grayscale-100"
-                key={`${program.category}-${program.title}`}
-              >
-                <div className="min-w-0">
-                  <h3 className="text-body-lg text-grayscale-1000">
-                    {program.title}
-                  </h3>
-                  <p className="text-caption text-grayscale-900">
-                    {program.description}
-                  </p>
-                  <p className="text-caption mt-1 text-grayscale-800">
-                    {program.deadline}
-                  </p>
-                </div>
-                <button
-                  className="text-body-md shrink-0 rounded-2xl bg-grayscale-1000 px-4 py-2 text-background"
-                  type="button"
+            {isListLoading && visiblePolicies.length === 0 ? (
+              <p className="text-body-md py-8 text-center text-grayscale-700">
+                지원 정책을 불러오는 중이에요...
+              </p>
+            ) : null}
+
+            {!isListLoading && visiblePolicies.length === 0 ? (
+              <p className="text-body-md py-8 text-center text-grayscale-700">
+                해당 카테고리의 지원 정책이 없어요.
+              </p>
+            ) : null}
+
+            {visiblePolicies.map((policy) => {
+              const deadline = formatPolicyDateKor(policy.endDate);
+              const url = resolvePolicyUrl(policy);
+
+              return (
+                <article
+                  className="flex min-h-25 items-center justify-between gap-5 bg-background px-5 py-5 rounded-2xl border border-grayscale-100"
+                  key={policy.id}
                 >
-                  신청하기
-                </button>
-              </article>
-            ))}
+                  <div className="min-w-0">
+                    <h3 className="text-body-lg line-clamp-2 text-grayscale-1000">
+                      {policy.title}
+                    </h3>
+                    {policy.subCategory ? (
+                      <p className="text-caption mt-1 text-grayscale-900">
+                        {policy.subCategory}
+                      </p>
+                    ) : null}
+                    {deadline ? (
+                      <p className="text-caption mt-1 text-grayscale-800">
+                        마감 {deadline}
+                      </p>
+                    ) : null}
+                  </div>
+                  <button
+                    className="text-body-md shrink-0 rounded-2xl bg-grayscale-1000 px-4 py-2 text-background disabled:bg-grayscale-200 disabled:text-grayscale-400"
+                    disabled={!url}
+                    onClick={() => {
+                      if (url) openExternalUrl(url);
+                    }}
+                    type="button"
+                  >
+                    신청하기
+                  </button>
+                </article>
+              );
+            })}
           </div>
         </section>
       </section>
