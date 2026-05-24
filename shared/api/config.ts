@@ -1,5 +1,5 @@
 const PUBLIC_API_BASE_URL = "https://burty.co.kr";
-const SERVER_API_BASE_URL = "http://44.194.3.230:8080";
+const SERVER_API_BASE_URL = "https://burty.co.kr";
 
 function normalizeBaseUrl(value: string): string {
   return value.replace(/\/$/, "");

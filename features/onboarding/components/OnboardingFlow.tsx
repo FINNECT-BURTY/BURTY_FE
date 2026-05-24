@@ -8,7 +8,7 @@ import { OnboardingFunnel } from "@/features/onboarding/components/OnboardingFun
 import { OnboardingProfileScreen } from "@/features/onboarding/components/OnboardingProfileScreen";
 import { OnboardingSplash } from "@/features/onboarding/components/OnboardingSplash";
 
-const SPLASH_DURATION_MS = 4600;
+const SPLASH_DURATION_MS = 9200;
 
 type OnboardingScreenView = "splash" | "entry" | "profile" | "agreement" | "funnel";
 type OnboardingRouteView = Exclude<OnboardingScreenView, "splash">;

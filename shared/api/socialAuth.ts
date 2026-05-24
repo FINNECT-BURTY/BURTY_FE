@@ -1,22 +1,6 @@
 import { getPublicAppBaseUrl, getServerApiBaseUrl } from "@/shared/api/config";
 
 const SUPPORTED_PROVIDERS = new Set(["kakao", "google", "naver", "apple"]);
-const LOCALHOST_ORIGIN_PATTERNS = [
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "http://localhost:8080",
-  "http://127.0.0.1:8080",
-] as const;
-
-type SocialAuthorizePayload = Readonly<{
-  data?: Readonly<{
-    authorizeUrl?: string;
-  }> | null;
-}>;
-
-function isSocialAuthorizePayload(value: unknown): value is SocialAuthorizePayload {
-  return typeof value === "object" && value !== null;
-}
 
 function getRequestOrigin(request: Request, requestUrl: URL) {
   const forwardedHost = request.headers.get("x-forwarded-host");
@@ -27,38 +11,6 @@ function getRequestOrigin(request: Request, requestUrl: URL) {
   }
 
   return request.headers.get("origin") ?? requestUrl.origin;
-}
-
-function replaceAll(value: string, searchValue: string, replaceValue: string) {
-  return value.split(searchValue).join(replaceValue);
-}
-
-function normalizeAuthorizeUrl(authorizeUrl: string, appBaseUrl: string) {
-  return LOCALHOST_ORIGIN_PATTERNS.reduce((normalizedUrl, localhostOrigin) => {
-    const encodedLocalhostOrigin = encodeURIComponent(localhostOrigin);
-    const encodedAppBaseUrl = encodeURIComponent(appBaseUrl);
-
-    return replaceAll(
-      replaceAll(normalizedUrl, localhostOrigin, appBaseUrl),
-      encodedLocalhostOrigin,
-      encodedAppBaseUrl,
-    );
-  }, authorizeUrl);
-}
-
-function normalizePayloadAuthorizeUrl(payload: unknown, appBaseUrl: string) {
-  if (!isSocialAuthorizePayload(payload)) return payload;
-
-  const authorizeUrl = payload.data?.authorizeUrl;
-  if (!authorizeUrl) return payload;
-
-  return {
-    ...payload,
-    data: {
-      ...payload.data,
-      authorizeUrl: normalizeAuthorizeUrl(authorizeUrl, appBaseUrl),
-    },
-  };
 }
 
 export function createSocialAuthorizeErrorResponse(message: string, status: number) {
@@ -112,16 +64,14 @@ export async function handleSocialAuthorizeUrlRequest(
         Accept: "application/json",
         Origin: appBaseUrl,
         Referer: appCallbackUrl,
+        "X-Frontend-Origin": appBaseUrl,
+        "X-Frontend-Redirect-Uri": appCallbackUrl,
         "X-Forwarded-Host": new URL(appBaseUrl).host,
         "X-Forwarded-Proto": new URL(appBaseUrl).protocol.replace(":", ""),
-        "X-Redirect-Uri": appCallbackUrl,
       },
     });
 
-    const payload: unknown = normalizePayloadAuthorizeUrl(
-      await response.json(),
-      appBaseUrl,
-    );
+    const payload: unknown = await response.json();
 
     return Response.json(payload, {
       headers: {

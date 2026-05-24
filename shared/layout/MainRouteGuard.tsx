@@ -12,12 +12,19 @@ import { LoadingScreen } from "@/shared/layout/LoadingScreen";
 
 type MainRouteGuardProps = Readonly<{
   children: React.ReactNode;
+  checkingFallback?: React.ReactNode;
+  unauthenticatedFallback?: React.ReactNode;
 }>;
 
-type AuthStatus = "checking" | "authenticated";
+type AuthStatus = "checking" | "authenticated" | "unauthenticated";
 
-export function MainRouteGuard({ children }: MainRouteGuardProps) {
+export function MainRouteGuard({
+  children,
+  checkingFallback,
+  unauthenticatedFallback,
+}: MainRouteGuardProps) {
   const router = useRouter();
+  const hasUnauthenticatedFallback = unauthenticatedFallback !== undefined;
   const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
@@ -40,6 +47,11 @@ export function MainRouteGuard({ children }: MainRouteGuardProps) {
       }
 
       if (mounted) {
+        if (hasUnauthenticatedFallback) {
+          setAuthStatus("unauthenticated");
+          return;
+        }
+
         router.replace("/onboarding");
       }
     }
@@ -49,10 +61,14 @@ export function MainRouteGuard({ children }: MainRouteGuardProps) {
     return () => {
       mounted = false;
     };
-  }, [router]);
+  }, [hasUnauthenticatedFallback, router]);
 
   if (authStatus !== "authenticated") {
-    return <LoadingScreen />;
+    if (unauthenticatedFallback) {
+      return unauthenticatedFallback;
+    }
+
+    return checkingFallback ?? <LoadingScreen />;
   }
 
   return currentUser ? (
