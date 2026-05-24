@@ -8,9 +8,8 @@ type CurrentUserResponse = Readonly<{
 
 const AUTH_ME_ENDPOINT = "/api/v1/auth/me";
 
-// /auth/me 응답은 userId / profileComplete 만 포함하므로
-// 표시 이름은 별도 프로필 엔드포인트에서 보충한다.
-const USER_PROFILE_ENDPOINTS: readonly string[] = ["/api/v1/users/me/name"];
+// 표시 이름 보충용. profileComplete 판단에는 사용하지 않는다.
+const USER_NAME_ENDPOINT = "/api/v1/users/me/name";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -94,19 +93,6 @@ function resolveProfileComplete(data: unknown) {
   );
 }
 
-/**
- * /auth/me 의 profileComplete 는 BE 에서 false 로 내려오는 경우가 있어
- * 프로필 이름 등록 여부로 기존 회원 완료 상태를 보완한다.
- */
-function resolveEffectiveProfileComplete(
-  authProfileComplete: boolean | undefined,
-  registeredName: string | null,
-): boolean {
-  if (authProfileComplete === true) return true;
-  if (registeredName?.trim()) return true;
-  return false;
-}
-
 async function fetchJson(endpoint: string) {
   const response = await backendFetch(endpoint, {
     cache: "no-store",
@@ -121,31 +107,27 @@ async function fetchJson(endpoint: string) {
   return payload.data;
 }
 
-async function resolveDisplayNameFromProfileEndpoints() {
-  for (const endpoint of USER_PROFILE_ENDPOINTS) {
-    const data = await fetchJson(endpoint);
-    const displayName = resolveDisplayName(data);
-
-    if (displayName) return displayName;
+async function fetchDisplayNameFromNameEndpoint() {
+  try {
+    const data = await fetchJson(USER_NAME_ENDPOINT);
+    return resolveDisplayName(data);
+  } catch {
+    return null;
   }
-
-  return null;
 }
 
 export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const authData = await fetchJson(AUTH_ME_ENDPOINT);
   if (!authData) return null;
 
-  const registeredName =
+  const displayName =
     resolveDisplayName(authData) ??
-    (await resolveDisplayNameFromProfileEndpoints());
+    (await fetchDisplayNameFromNameEndpoint()) ??
+    "고객";
 
   return {
-    displayName: registeredName ?? "고객",
-    profileComplete: resolveEffectiveProfileComplete(
-      resolveProfileComplete(authData),
-      registeredName,
-    ),
+    displayName,
+    profileComplete: resolveProfileComplete(authData),
     userId: resolveUserId(authData),
   };
 }

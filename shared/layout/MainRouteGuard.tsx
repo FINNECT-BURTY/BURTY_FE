@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -17,20 +16,13 @@ type MainRouteGuardProps = Readonly<{
   unauthenticatedFallback?: React.ReactNode;
 }>;
 
-type AuthStatus =
-  | "checking"
-  | "authenticated"
-  | "unauthenticated"
-  | "needs-onboarding";
-
-const ONBOARDING_REDIRECT_PATH = "/onboarding?step=agreement&newUser=true";
+type AuthStatus = "checking" | "authenticated" | "unauthenticated";
 
 export function MainRouteGuard({
   children,
   checkingFallback,
   unauthenticatedFallback,
 }: MainRouteGuardProps) {
-  const router = useRouter();
   const { isSplashComplete } = useSplashGate();
   const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
@@ -38,10 +30,10 @@ export function MainRouteGuard({
 
   useEffect(() => {
     if (!isSplashComplete || !pendingRedirect) return;
-    router.replace(pendingRedirect);
+    window.location.replace(pendingRedirect);
     const timer = window.setTimeout(() => setPendingRedirect(null), 0);
     return () => window.clearTimeout(timer);
-  }, [isSplashComplete, pendingRedirect, router]);
+  }, [isSplashComplete, pendingRedirect]);
 
   useEffect(() => {
     let mounted = true;
@@ -62,13 +54,9 @@ export function MainRouteGuard({
           return;
         }
 
-        // fetchCurrentUser 가 /auth/me + 프로필 이름으로 완료 여부를 판단한다.
-        if (user.profileComplete !== true) {
-          setAuthStatus("needs-onboarding");
-          setPendingRedirect(ONBOARDING_REDIRECT_PATH);
-          return;
-        }
-
+        // 로그인된 사용자는 홈에 진입한다.
+        // BE profileComplete=false 오탐으로 온보딩을 반복시키지 않는다.
+        // 신규 사용자는 소셜/이메일 콜백 단계에서 온보딩으로 보낸다.
         setCurrentUser(user);
         setAuthStatus("authenticated");
       } catch (error) {
@@ -90,9 +78,9 @@ export function MainRouteGuard({
     return () => {
       mounted = false;
     };
-  }, [router, unauthenticatedFallback]);
+  }, [unauthenticatedFallback]);
 
-  if (authStatus === "checking" || authStatus === "needs-onboarding") {
+  if (authStatus === "checking") {
     return checkingFallback ?? <LoadingScreen />;
   }
 

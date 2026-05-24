@@ -8,6 +8,7 @@ import {
   birthYearOptions,
   toAgeRange,
 } from "@/features/onboarding/lib/birthDate";
+import { isOnboardingProfileAlreadyRegistered } from "@/features/onboarding/lib/profileRegistration";
 import { BirthDateSelect } from "@/features/onboarding/ui/BirthDateSelect";
 import { backendFetch } from "@/shared/api/backendFetch";
 import { ErrorScreen } from "@/shared/layout/ErrorScreen";
@@ -94,6 +95,11 @@ export function OnboardingProfileScreen({
 
       if (response.status === 401 || response.status === 403) {
         window.location.replace("/onboarding?step=entry");
+        return;
+      }
+
+      if (isOnboardingProfileAlreadyRegistered(response, result)) {
+        onComplete();
         return;
       }
 

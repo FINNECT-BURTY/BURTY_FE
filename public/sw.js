@@ -11,7 +11,7 @@
  * 변경 시 반드시 `CACHE_VERSION`을 올린다. activate에서 옛 캐시를 삭제한다.
  */
 
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const CACHE_NAME = `burty-pwa-${CACHE_VERSION}`;
 
 const STATIC_ASSET_PREFIXES = ["/_next/static/", "/icons/", "/fonts/"];

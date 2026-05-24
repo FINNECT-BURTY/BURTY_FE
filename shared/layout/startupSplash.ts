@@ -1,7 +1,7 @@
 export const SKIP_STARTUP_SPLASH_KEY = "burty.skipStartupSplash";
 
 let documentEntryPathname: string | null = null;
-let splashConsumedThisDocument = false;
+let splashFinishedThisDocument = false;
 
 function getDocumentEntryPathname(): string {
   if (typeof window === "undefined") return "";
@@ -32,14 +32,21 @@ function consumeSkipStartupSplashFlag(): boolean {
   }
 }
 
+export function markStartupSplashFinished() {
+  splashFinishedThisDocument = true;
+}
+
 /**
  * `/` 로 처음 접속하거나 새로고침했을 때만 true.
- * - 문서 진입 경로가 `/` 가 아니면 false (예: /auth/callback → router.replace("/"))
- * - 같은 문서 안에서 홈 탭 재진입 등은 false
- * - 로그인/온보딩 완료 후 홈 이동은 markSkipStartupSplash() 로 false
+ * React Strict Mode 에서 useState 초기화가 두 번 호출되어도
+ * 부수 효과 없이 같은 결과를 반환해야 한다.
  */
 export function shouldShowStartupSplash(): boolean {
   if (typeof window === "undefined") return false;
+
+  if (splashFinishedThisDocument) {
+    return false;
+  }
 
   if (consumeSkipStartupSplashFlag()) {
     return false;
@@ -49,10 +56,5 @@ export function shouldShowStartupSplash(): boolean {
     return false;
   }
 
-  if (splashConsumedThisDocument) {
-    return false;
-  }
-
-  splashConsumedThisDocument = true;
   return true;
 }
