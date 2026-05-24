@@ -2,6 +2,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import { backendFetch } from "@/shared/api/backendFetch";
+import { resolvePostAuthDestination } from "@/shared/auth/resolvePostAuthDestination";
 import { setAuthTokens, setSessionMarker } from "@/shared/auth/tokenStorage";
 
 type EmailLoginResponseData = Readonly<{
@@ -31,17 +32,11 @@ type UseEmailLoginResult = Readonly<{
   submitEmailLogin: (input: EmailLoginInput) => Promise<void>;
 }>;
 
-const ONBOARDING_AGREEMENT_PATH = "/onboarding?step=agreement&newUser=true";
-
 function resolveDestination(data: EmailLoginResponseData): string {
-  if (data.newUser === true || data.profileComplete === false) {
-    return ONBOARDING_AGREEMENT_PATH;
-  }
-  // profileComplete 가 명시적으로 true 일 때만 홈으로 보낸다 (undefined 도 안전하게 온보딩).
-  if (data.profileComplete === true) {
-    return "/";
-  }
-  return ONBOARDING_AGREEMENT_PATH;
+  return resolvePostAuthDestination({
+    newUser: data.newUser,
+    profileComplete: data.profileComplete,
+  });
 }
 
 export function useEmailLogin(): UseEmailLoginResult {
