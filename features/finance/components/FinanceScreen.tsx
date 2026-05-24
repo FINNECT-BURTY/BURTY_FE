@@ -107,7 +107,7 @@ export function FinanceScreen() {
 
           <div className="mt-2 flex gap-2">
             {filterItems.map((item) => {
-              const isSelected = item.value === selectedFilter;
+              const isSelected = item.value  === selectedFilter;
 
               return (
                 <button
@@ -136,7 +136,7 @@ export function FinanceScreen() {
                   {item.isRisk ? (
                     <p className="text-caption mb-2 text-red">위험 발생 예정</p>
                   ) : null}
-                  <h3 className="text-body-md text-grayscale-1000">
+                  <h3 className="text-title-xs text-grayscale-1000">
                     {item.title}
                   </h3>
                   <p className="text-caption text-grayscale-900">

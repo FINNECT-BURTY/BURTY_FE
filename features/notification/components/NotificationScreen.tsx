@@ -15,7 +15,7 @@ const newNotifications: readonly NotificationItem[] = [
   {
     category: "마감 D-3",
     message: "주거 지원이 3일 남았어요",
-    time: "11:00",
+    time: "1분 전",
   },
   {
     category: "위험 발생",

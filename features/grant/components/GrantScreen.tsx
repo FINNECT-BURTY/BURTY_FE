@@ -140,17 +140,17 @@ export function GrantScreen() {
               </p>
             ) : null}
 
-            {/* TODO: 디자이너가 지원 정책용 일러스트/로고 전달하면 교체. */}
             <div
               aria-hidden="true"
               className="mt-4 flex aspect-[286/151] w-full items-center justify-center overflow-hidden rounded-xl bg-yellow-100"
             >
               <Image
                 alt=""
-                className="h-16 w-16 opacity-60"
-                height={64}
-                src="/icons/logo/192.svg"
-                width={64}
+                aria-hidden="true"
+                className="h-30 w-30"
+                height={100}
+                src="/icons/grant/grant.svg"
+                width={100}
               />
             </div>
 
@@ -227,7 +227,7 @@ export function GrantScreen() {
                   key={policy.id}
                 >
                   <div className="min-w-0">
-                    <h3 className="text-body-lg line-clamp-2 text-grayscale-1000">
+                    <h3 className="text-title-sm line-clamp-2 text-grayscale-1000">
                       {policy.title}
                     </h3>
                     {policy.subCategory ? (
