@@ -11,6 +11,7 @@ import {
 import { isOnboardingProfileAlreadyRegistered } from "@/features/onboarding/lib/profileRegistration";
 import { BirthDateSelect } from "@/features/onboarding/ui/BirthDateSelect";
 import { backendFetch } from "@/shared/api/backendFetch";
+import { setCachedDisplayName } from "@/shared/auth/displayNameCache";
 import { ErrorScreen } from "@/shared/layout/ErrorScreen";
 import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
 import { BottomActionBar } from "@/shared/ui/BottomActionBar";
@@ -99,6 +100,7 @@ export function OnboardingProfileScreen({
       }
 
       if (isOnboardingProfileAlreadyRegistered(response, result)) {
+        setCachedDisplayName(name.trim());
         onComplete();
         return;
       }
@@ -107,6 +109,7 @@ export function OnboardingProfileScreen({
         throw new Error(result?.message || "Profile onboarding failed.");
       }
 
+      setCachedDisplayName(name.trim());
       onComplete();
     } catch (error) {
       console.error("Profile onboarding failed:", error);

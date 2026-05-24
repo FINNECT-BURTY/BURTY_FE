@@ -36,6 +36,23 @@ export function MainRouteGuard({
   }, [isSplashComplete, pendingRedirect]);
 
   useEffect(() => {
+    if (!currentUser || currentUser.displayName !== "고객") return;
+
+    let mounted = true;
+
+    void (async () => {
+      const user = await fetchCurrentUser().catch(() => null);
+      if (!mounted || !user || user.displayName === "고객") return;
+
+      setCurrentUser(user);
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [currentUser]);
+
+  useEffect(() => {
     let mounted = true;
 
     async function checkAuth() {

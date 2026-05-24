@@ -131,7 +131,7 @@ export function GrantScreen() {
             <h2 className="text-title-md text-grayscale-1000">
               {buildFeaturedHeadline(featuredDaysUntilDeadline)}
             </h2>
-            <p className="text-body-md mt-1 line-clamp-2 text-grayscale-1000">
+            <p className="text-body-md mt-1 break-keep text-grayscale-1000">
               {featured.title}
             </p>
             {featuredHashtags.length > 0 ? (
@@ -227,7 +227,7 @@ export function GrantScreen() {
                   key={policy.id}
                 >
                   <div className="min-w-0">
-                    <h3 className="text-title-sm line-clamp-2 text-grayscale-1000">
+                    <h3 className="text-title-sm break-keep text-grayscale-1000">
                       {policy.title}
                     </h3>
                     {policy.subCategory ? (

@@ -65,6 +65,15 @@ export function HomeScreen() {
               어제보다 {homeSummary.savingRate}% 절약 중이에요
             </p>
           </div>
+          <div className="flex flex-1 items-center justify-center">
+            <Image
+              alt=""
+              aria-hidden="true"
+              height={150}
+              src="/icons/main/character.svg"
+              width={150}
+            />
+          </div>
 
           <div className="mt-auto">
             <p className="text-body-md text-grayscale-800">
