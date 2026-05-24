@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { hydrateAuthTokensFromCookieSession } from "@/shared/api/backendFetch";
 import type { CurrentUser } from "@/shared/auth/currentUser";
 import { fetchCurrentUser } from "@/shared/auth/fetchCurrentUser";
 import { navigateAfterAuth } from "@/shared/auth/navigateAfterAuth";
@@ -54,6 +55,7 @@ export function AuthCallbackClient({
     async function completeAuth() {
       setCallbackFailed(false);
 
+      await hydrateAuthTokensFromCookieSession().catch(() => false);
       const user = await fetchCurrentUser().catch(() => null);
       if (!mounted) return;
 
