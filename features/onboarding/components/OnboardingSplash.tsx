@@ -60,39 +60,38 @@ export function OnboardingSplash() {
   return (
     <section
       aria-label={SPLASH_SCENES[stage].label}
-      className="relative flex min-h-dvh flex-1 overflow-hidden bg-yellow-100"
+      className="relative h-full w-full overflow-hidden bg-yellow-100"
     >
-      <div className="absolute left-1/2 top-1/2 aspect-[360/640] h-full max-h-[calc(100vw*640/360)] w-full max-w-[calc(100dvh*360/640)] -translate-x-1/2 -translate-y-1/2 overflow-hidden">
-        {SPLASH_SCENES.map((scene, index) => (
-          <div
-            key={scene.src}
-            aria-hidden="true"
-            className={`${getSceneClassName(stage === index)} bg-cover bg-center bg-no-repeat`}
-            style={{ backgroundImage: `url(${scene.src})` }}
-          />
-        ))}
+      {SPLASH_SCENES.map((scene, index) => (
+        <div
+          key={scene.src}
+          aria-hidden="true"
+          className={`${getSceneClassName(stage === index)} bg-cover bg-center bg-no-repeat`}
+          style={{ backgroundImage: `url(${scene.src})` }}
+        />
+      ))}
 
-        {SPLASH_SCENES.map((scene, index) => {
-          const active = stage === index;
+      {SPLASH_SCENES.map((scene, index) => {
+        const active = stage === index;
 
-          if ("title" in scene) {
-            return (
-              <div
-                aria-hidden={!active}
-                className={getContentClassName(active)}
-                key={`${scene.src}-title`}
+        if ("title" in scene) {
+          return (
+            <div
+              aria-hidden={!active}
+              className={getContentClassName(active)}
+              key={`${scene.src}-title`}
             >
-                <p
-                  className={`text-title-lg absolute left-0 right-0 ${SPLASH_TEXT_TOP_CLASS_NAME} whitespace-pre-line px-6 text-center text-grayscale-1000`}
-                >
-                  {scene.title}
-                </p>
-              </div>
-            );
-          }
+              <p
+                className={`text-title-lg absolute left-0 right-0 ${SPLASH_TEXT_TOP_CLASS_NAME} whitespace-pre-line px-6 text-center text-grayscale-1000`}
+              >
+                {scene.title}
+              </p>
+            </div>
+          );
+        }
 
-          if ("logoSrc" in scene) {
-            return (
+        if ("logoSrc" in scene) {
+          return (
             <div
               aria-hidden={!active}
               className={getContentClassName(active)}
@@ -105,15 +104,14 @@ export function OnboardingSplash() {
                 height={73}
                 priority
                 src={scene.logoSrc}
-                  width={188}
-                />
-              </div>
-            );
-          }
+                width={188}
+              />
+            </div>
+          );
+        }
 
-          return null;
-        })}
-      </div>
+        return null;
+      })}
     </section>
   );
 }

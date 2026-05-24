@@ -4,6 +4,7 @@ import {
   clearSessionMarker,
   getAccessToken,
   getRefreshToken,
+  hasAuthTokens,
   setAuthTokens,
 } from "@/shared/auth/tokenStorage";
 
@@ -84,6 +85,53 @@ async function refreshSession(base: string): Promise<boolean> {
       refreshToken: nextRefreshToken,
     });
   }
+
+  return true;
+}
+
+/**
+ * BFF 소셜 로그인 세션(HttpOnly refresh 쿠키)에서 SPA용 Bearer 토큰을 받아 localStorage에 저장한다.
+ *
+ * Swagger: POST /auth/refresh 는 body 또는 BURTY_REFRESH 쿠키로 토큰을 재발급하고,
+ * GET /users/me/name 은 bearerAuth 로만 문서화되어 있다.
+ */
+export async function hydrateAuthTokensFromCookieSession(): Promise<boolean> {
+  if (hasAuthTokens()) return true;
+
+  const base = getPublicApiBaseUrl();
+  let response: Response;
+
+  try {
+    response = await fetch(`${base}/api/v1/auth/refresh`, {
+      body: JSON.stringify({}),
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
+  } catch {
+    return false;
+  }
+
+  if (!response.ok) return false;
+
+  const payload = (await response.json().catch(() => null)) as
+    | RefreshResponse
+    | null;
+
+  if (payload?.success !== true) return false;
+
+  const nextAccessToken = payload.data?.accessToken;
+  const nextRefreshToken = payload.data?.refreshToken;
+
+  if (!nextAccessToken || !nextRefreshToken) return false;
+
+  setAuthTokens({
+    accessToken: nextAccessToken,
+    refreshToken: nextRefreshToken,
+  });
 
   return true;
 }

@@ -1,8 +1,7 @@
-import { backendFetch } from "@/shared/api/backendFetch";
-import { getPublicApiBaseUrl } from "@/shared/api/config";
+import { backendFetch, hydrateAuthTokensFromCookieSession } from "@/shared/api/backendFetch";
 import type { CurrentUser } from "@/shared/auth/currentUser";
 import { getCachedDisplayName } from "@/shared/auth/displayNameCache";
-import { getAccessToken } from "@/shared/auth/tokenStorage";
+import { hasAuthTokens } from "@/shared/auth/tokenStorage";
 
 type CurrentUserResponse = Readonly<{
   success: boolean;
@@ -11,7 +10,8 @@ type CurrentUserResponse = Readonly<{
 
 const AUTH_ME_ENDPOINT = "/api/v1/auth/me";
 
-// 표시 이름 보충용. profileComplete 판단에는 사용하지 않는다.
+// /auth/me 응답은 userId / profileComplete 만 포함하므로
+// 표시 이름은 별도 프로필 엔드포인트에서 보충한다.
 const USER_NAME_ENDPOINT = "/api/v1/users/me/name";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -110,45 +110,24 @@ async function fetchJson(endpoint: string) {
   return payload.data;
 }
 
-async function fetchNamePayload(withBearer: boolean) {
-  const accessToken = withBearer ? getAccessToken() : null;
-  const headers: HeadersInit = { Accept: "application/json" };
-
-  if (withBearer && accessToken) {
-    headers.Authorization = `Bearer ${accessToken}`;
-  }
-
-  const response = await fetch(`${getPublicApiBaseUrl()}${USER_NAME_ENDPOINT}`, {
-    cache: "no-store",
-    credentials: "include",
-    headers,
-    method: "GET",
-  });
-
-  return (await response.json().catch(() => null)) as CurrentUserResponse | null;
-}
-
 async function fetchDisplayNameFromNameEndpoint() {
   try {
-    // 소셜(BFF 쿠키) → 이메일(Bearer) 순으로 시도한다.
-    // backendFetch 는 만료된 localStorage 토큰을 함께 보내 name API 가 400 이 될 수 있다.
-    for (const withBearer of [false, true] as const) {
-      const payload = await fetchNamePayload(withBearer);
-      if (payload?.success !== true) continue;
-
-      const name = resolveDisplayName(payload.data);
-      if (name) return name;
-    }
+    const data = await fetchJson(USER_NAME_ENDPOINT);
+    return resolveDisplayName(data);
   } catch {
     return null;
   }
-
-  return null;
 }
 
 export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const authData = await fetchJson(AUTH_ME_ENDPOINT);
   if (!authData) return null;
+
+  // 소셜(BFF) 로그인은 HttpOnly 쿠키만 있고 localStorage Bearer 가 없을 수 있다.
+  // Swagger: /users/me/name 은 bearerAuth, /auth/refresh 는 쿠키 refresh 로 body 토큰 발급.
+  if (!hasAuthTokens()) {
+    await hydrateAuthTokensFromCookieSession();
+  }
 
   const userId = resolveUserId(authData);
   const displayName =

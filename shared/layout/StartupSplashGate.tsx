@@ -52,7 +52,7 @@ export function StartupSplashGate({ children }: StartupSplashGateProps) {
       <div className="relative flex min-h-0 flex-1 flex-col">
         {children}
         {showSplash ? (
-          <div className="absolute inset-0 z-50 flex flex-col">
+          <div className="absolute inset-0 z-50">
             <OnboardingSplash />
           </div>
         ) : null}
