@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import type { CurrentUser } from "@/shared/auth/currentUser";
 import { fetchCurrentUser } from "@/shared/auth/fetchCurrentUser";
+import { setSessionMarker } from "@/shared/auth/tokenStorage";
 import { ErrorScreen } from "@/shared/layout/ErrorScreen";
 import { LoadingScreen } from "@/shared/layout/LoadingScreen";
 
@@ -76,6 +77,8 @@ export function AuthCallbackClient({
         return;
       }
 
+      // 다음 진입(`/`) 에서 서버 사이드 fallback 결정을 위해 세션 마커 쿠키를 둔다.
+      setSessionMarker();
       router.replace(resolveDestination(newUser, profileComplete, user));
     }
 

@@ -32,15 +32,14 @@ const topSpacingClassNames: Record<BottomActionBarTopSpacing, string> = {
 };
 
 const bottomSpacingClassNames: Record<BottomActionBarBottomSpacing, string> = {
-  compact: "pb-[max(24px,env(safe-area-inset-bottom))]",
-  default: "pb-[max(27px,env(safe-area-inset-bottom))]",
+  compact: "pb-[max(17px,env(safe-area-inset-bottom))]",
+  default: "pb-[max(17px,env(safe-area-inset-bottom))]",
 };
 
 const secondaryBaseClassNames: Record<BottomActionBarSecondaryPosition, string> =
   {
-    above:
-      "text-caption mx-auto block border-b border-grayscale-800 pb-0.5 text-grayscale-800",
-    below: "text-body-md mx-auto block text-grayscale-1000",
+    above: "text-caption mx-auto block pb-0.5 text-grayscale-800",
+    below: "text-caption mx-auto block text-grayscale-800",
   };
 
 const secondarySpacingClassNames: Record<BottomActionBarSecondaryPosition, string> =

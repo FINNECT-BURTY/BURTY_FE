@@ -61,15 +61,16 @@ export function SolutionResolveScreen() {
 
   if (isCompleted) {
     return (
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
         <Header
+          className="!bg-background"
           leftSlot={<HeaderBackButton onClick={handleBack} />}
           rightSlot={<div aria-hidden="true" className="size-10" />}
           title="해결 완료"
         />
 
         <section className="min-h-0 flex-1 overflow-y-auto px-6 pt-3">
-          <article className="bg-background px-5 py-5 text-center">
+          <article className="bg-background px-5 py-5 text-center border border-grayscale-100 rounded-2xl">
             <p className="text-title-sm text-grayscale-1000">
               월말 예상 잔액 변화
             </p>
@@ -112,8 +113,9 @@ export function SolutionResolveScreen() {
   }
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
+    <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
       <Header
+        className="!bg-background"
         leftSlot={<HeaderBackButton onClick={handleBack} />}
         rightSlot={<div aria-hidden="true" className="size-10" />}
         title="해결하기"

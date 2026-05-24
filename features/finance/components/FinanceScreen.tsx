@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 import { AssetFlowCard } from "@/features/finance/components/AssetFlowCard";
@@ -92,9 +93,17 @@ export function FinanceScreen() {
         </div>
 
         <section className="mt-6">
-          <h2 className="text-title-md text-grayscale-1000">
-            지출 및 수입 일정
-          </h2>
+          <div className="flex items-center gap-1.5">
+            <Image
+              alt=""
+              height={20}
+              src="/icons/main/money.svg"
+              width={20}
+            />
+            <h2 className="text-title-md text-grayscale-1000">
+              지출 및 수입 일정
+            </h2>
+          </div>
 
           <div className="mt-2 flex gap-2">
             {filterItems.map((item) => {

@@ -54,9 +54,6 @@ export function OnboardingConnectionScreen({
         <p className="text-caption mt-4 text-grayscale-1000">
           은행 수준으로 안전하게 보호됩니다
         </p>
-        <p className="text-body-md mx-auto text-grayscale-900">
-          사용자 동의 없이 이체, 결제, 대출 신청은 실행되지 않아요.
-        </p>
       </section>
 
       <BottomActionBar
@@ -65,7 +62,7 @@ export function OnboardingConnectionScreen({
         onAction={onComplete}
         onSecondary={() => setShowRequiredDialog(true)}
         secondaryLabel="나중에 할게요"
-        secondaryPosition="above"
+        secondaryPosition="below"
       />
 
       {showRequiredDialog ? (

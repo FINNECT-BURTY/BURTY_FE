@@ -7,6 +7,7 @@ import {
   socialProviderConfigs,
   socialProviders,
 } from "@/features/onboarding/constants/socialProviders";
+import { useEmailLogin } from "@/features/onboarding/hooks/useEmailLogin";
 import { useSocialLogin } from "@/features/onboarding/hooks/useSocialLogin";
 
 const inactiveAuthLinks = [
@@ -41,12 +42,25 @@ function CheckIcon({ checked }: Readonly<{ checked: boolean }>) {
 export function OnboardingEntry() {
   const { loadingProvider, loginErrorMessage, startSocialLogin } =
     useSocialLogin();
+  const {
+    errorMessage: emailLoginError,
+    isSubmitting: isEmailLoginSubmitting,
+    submitEmailLogin,
+  } = useEmailLogin();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
 
+  const isAuthInProgress = isEmailLoginSubmitting || loadingProvider !== null;
+
   const handleEmailLogin = () => {
-    // TODO: BE 이메일 로그인 endpoint 연결 후 구현.
+    if (isAuthInProgress) return;
+    void submitEmailLogin({ email, password });
+  };
+
+  const handleEmailFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    handleEmailLogin();
   };
 
   return (
@@ -61,63 +75,84 @@ export function OnboardingEntry() {
         />
       </header>
 
-      <section className="mt-14 flex flex-col gap-2">
-        <input
-          autoComplete="email"
-          className={inputClassName}
-          inputMode="email"
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="이메일을 입력해 주세요"
-          type="email"
-          value={email}
-        />
-        <input
-          autoComplete="current-password"
-          className={inputClassName}
-          onChange={(event) => setPassword(event.target.value)}
-          placeholder="비밀번호를 입력해 주세요"
-          type="password"
-          value={password}
-        />
-      </section>
-
-      <button
-        aria-checked={keepLoggedIn}
-        className="mt-4 flex w-fit items-center gap-2 self-start"
-        onClick={() => setKeepLoggedIn((current) => !current)}
-        role="checkbox"
-        type="button"
+      <form
+        className="mt-14 flex flex-col"
+        noValidate
+        onSubmit={handleEmailFormSubmit}
       >
-        <CheckIcon checked={keepLoggedIn} />
-        <span className="text-caption text-grayscale-700">로그인 상태 유지</span>
-      </button>
+        <section className="flex flex-col gap-2">
+          <input
+            autoComplete="email"
+            className={inputClassName}
+            disabled={isAuthInProgress}
+            inputMode="email"
+            name="email"
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="이메일을 입력해 주세요"
+            type="email"
+            value={email}
+          />
+          <input
+            autoComplete="current-password"
+            className={inputClassName}
+            disabled={isAuthInProgress}
+            name="password"
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="비밀번호를 입력해 주세요"
+            type="password"
+            value={password}
+          />
+        </section>
 
-      <button
-        className="text-title-md mt-4 flex h-13 w-full items-center justify-center rounded-2xl bg-yellow-400 text-grayscale-1000"
-        onClick={handleEmailLogin}
-        type="button"
-      >
-        로그인
-      </button>
+        <button
+          aria-checked={keepLoggedIn}
+          className="mt-4 flex w-fit items-center gap-2 self-start"
+          onClick={() => setKeepLoggedIn((current) => !current)}
+          role="checkbox"
+          type="button"
+        >
+          <CheckIcon checked={keepLoggedIn} />
+          <span className="text-caption text-grayscale-700">로그인 상태 유지</span>
+        </button>
 
-      <nav className="mt-4 flex items-center justify-center">
-        {inactiveAuthLinks.map((link, index) => (
-          <Fragment key={link.id}>
-            {index > 0 ? (
-              <span
-                aria-hidden="true"
-                className="mx-3 h-3 w-px bg-grayscale-300"
-              />
-            ) : null}
-            <button
-              className="text-caption px-1 py-1 text-grayscale-700"
-              type="button"
-            >
-              {link.label}
-            </button>
-          </Fragment>
-        ))}
-      </nav>
+        <button
+          aria-busy={isEmailLoginSubmitting}
+          className="text-title-md mt-4 flex h-13 w-full items-center justify-center rounded-2xl bg-yellow-400 text-grayscale-1000 disabled:cursor-not-allowed"
+          disabled={isAuthInProgress}
+          type="submit"
+        >
+          로그인
+        </button>
+
+        {emailLoginError ? (
+          <p
+            aria-live="polite"
+            className="text-caption mt-3 text-center text-red"
+            role="alert"
+          >
+            {emailLoginError}
+          </p>
+        ) : null}
+
+        <nav className="mt-4 flex items-center justify-center">
+          {inactiveAuthLinks.map((link, index) => (
+            <Fragment key={link.id}>
+              {index > 0 ? (
+                <span
+                  aria-hidden="true"
+                  className="mx-3 h-3 w-px bg-grayscale-300"
+                />
+              ) : null}
+              <button
+                className="text-caption px-1 py-1 text-grayscale-700"
+                type="button"
+              >
+                {link.label}
+              </button>
+            </Fragment>
+          ))}
+        </nav>
+      </form>
 
       <section
         aria-label="소셜 계정으로 시작하기"
@@ -130,7 +165,7 @@ export function OnboardingEntry() {
             <button
               aria-label={providerConfig.label.replace(/\n/g, " ")}
               className="flex flex-col items-center gap-3 disabled:opacity-60"
-              disabled={loadingProvider !== null}
+              disabled={isAuthInProgress}
               key={provider}
               onClick={() => startSocialLogin(provider)}
               type="button"
@@ -154,7 +189,7 @@ export function OnboardingEntry() {
         })}
       </section>
 
-      {loginErrorMessage ? (
+      {loginErrorMessage && !emailLoginError ? (
         <p className="text-caption mt-3 text-center text-grayscale-700">
           {loginErrorMessage}
         </p>
