@@ -13,7 +13,14 @@ const ONBOARDING_PATHNAME = "/onboarding";
 type OnboardingScreenView = "entry" | "profile" | "agreement" | "funnel";
 type OnboardingStepView = Exclude<OnboardingScreenView, "entry">;
 
-function resolveOnboardingStep(searchParams: URLSearchParams): OnboardingScreenView | null {
+function resolveOnboardingStep(
+  searchParams: URLSearchParams,
+): OnboardingScreenView | null {
+  // 홈(`/`)에서는 로그인 화면만 보여준다. 쿼리로 약관 단계 진입하지 않는다.
+  if (typeof window !== "undefined" && window.location.pathname === "/") {
+    return null;
+  }
+
   const step = searchParams.get("step");
   if (step === "entry") {
     return "entry";
