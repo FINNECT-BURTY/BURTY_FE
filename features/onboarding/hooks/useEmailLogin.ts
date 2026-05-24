@@ -2,6 +2,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import { backendFetch } from "@/shared/api/backendFetch";
+import { navigateAfterAuth } from "@/shared/auth/navigateAfterAuth";
 import { resolvePostAuthDestination } from "@/shared/auth/resolvePostAuthDestination";
 import { setAuthTokens, setSessionMarker } from "@/shared/auth/tokenStorage";
 
@@ -79,7 +80,7 @@ export function useEmailLogin(): UseEmailLoginResult {
 
         setAuthTokens({ accessToken, refreshToken });
         setSessionMarker();
-        router.replace(resolveDestination(result.data));
+        navigateAfterAuth(router, resolveDestination(result.data));
       } catch (error) {
         console.error("Email login failed:", error);
         setErrorMessage("네트워크 오류가 발생했어요. 잠시 후 다시 시도해주세요.");

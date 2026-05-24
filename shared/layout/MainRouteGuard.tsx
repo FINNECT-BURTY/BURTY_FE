@@ -62,8 +62,7 @@ export function MainRouteGuard({
           return;
         }
 
-        // 백엔드에서 profileComplete 를 명시적으로 true 로 내려준 경우에만 홈으로 진입한다.
-        // undefined / false 모두 안전하게 온보딩으로 보낸다.
+        // fetchCurrentUser 가 /auth/me + 프로필 이름으로 완료 여부를 판단한다.
         if (user.profileComplete !== true) {
           setAuthStatus("needs-onboarding");
           setPendingRedirect(ONBOARDING_REDIRECT_PATH);

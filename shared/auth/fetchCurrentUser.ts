@@ -94,6 +94,19 @@ function resolveProfileComplete(data: unknown) {
   );
 }
 
+/**
+ * /auth/me 의 profileComplete 는 BE 에서 false 로 내려오는 경우가 있어
+ * 프로필 이름 등록 여부로 기존 회원 완료 상태를 보완한다.
+ */
+function resolveEffectiveProfileComplete(
+  authProfileComplete: boolean | undefined,
+  registeredName: string | null,
+): boolean {
+  if (authProfileComplete === true) return true;
+  if (registeredName?.trim()) return true;
+  return false;
+}
+
 async function fetchJson(endpoint: string) {
   const response = await backendFetch(endpoint, {
     cache: "no-store",
@@ -123,14 +136,16 @@ export async function fetchCurrentUser(): Promise<CurrentUser | null> {
   const authData = await fetchJson(AUTH_ME_ENDPOINT);
   if (!authData) return null;
 
-  const displayName =
+  const registeredName =
     resolveDisplayName(authData) ??
-    (await resolveDisplayNameFromProfileEndpoints()) ??
-    "고객";
+    (await resolveDisplayNameFromProfileEndpoints());
 
   return {
-    displayName,
-    profileComplete: resolveProfileComplete(authData),
+    displayName: registeredName ?? "고객",
+    profileComplete: resolveEffectiveProfileComplete(
+      resolveProfileComplete(authData),
+      registeredName,
+    ),
     userId: resolveUserId(authData),
   };
 }

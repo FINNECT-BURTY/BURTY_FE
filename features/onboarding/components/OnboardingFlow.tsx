@@ -6,6 +6,7 @@ import { OnboardingAgreementScreen } from "@/features/onboarding/components/Onbo
 import { OnboardingEntry } from "@/features/onboarding/components/OnboardingEntry";
 import { OnboardingFunnel } from "@/features/onboarding/components/OnboardingFunnel";
 import { OnboardingProfileScreen } from "@/features/onboarding/components/OnboardingProfileScreen";
+import { markSkipStartupSplash } from "@/shared/layout/startupSplash";
 
 const ONBOARDING_PATHNAME = "/onboarding";
 
@@ -65,7 +66,7 @@ export function OnboardingFlow() {
   };
 
   const handleOnboardingComplete = () => {
-    // 자산 연결까지 끝났으면 홈으로 보낸다. 홈에서 MainRouteGuard 가 다시 인증/프로필 상태를 검증한다.
+    markSkipStartupSplash();
     window.location.replace("/");
   };
 
