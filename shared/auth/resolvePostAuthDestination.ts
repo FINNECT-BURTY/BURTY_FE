@@ -8,7 +8,9 @@ type ResolvePostAuthDestinationInput = Readonly<{
 
 /**
  * 로그인/소셜 콜백 직후 이동 경로.
- * profileComplete 가 true 면 기존 가입 유저로 보고 항상 홈으로 보낸다.
+ *
+ * BE 는 기존 회원에게도 profileComplete=false 를 내려주는 경우가 있다.
+ * newUser=false 이면 기존 회원으로 보고 profileComplete 값과 무관하게 홈으로 보낸다.
  */
 export function resolvePostAuthDestination({
   newUser,
@@ -18,13 +20,12 @@ export function resolvePostAuthDestination({
     return "/";
   }
 
-  if (profileComplete === false || newUser === true) {
-    return ONBOARDING_AGREEMENT_PATH;
-  }
-
-  // newUser=false 면 기존 회원. profileComplete 미전달이어도 홈으로 보낸다.
   if (newUser === false) {
     return "/";
+  }
+
+  if (newUser === true || profileComplete === false) {
+    return ONBOARDING_AGREEMENT_PATH;
   }
 
   return ONBOARDING_AGREEMENT_PATH;

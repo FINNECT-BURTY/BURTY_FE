@@ -5,32 +5,49 @@ import { useEffect, useState } from "react";
 import { OnboardingSplash } from "@/features/onboarding/components/OnboardingSplash";
 import { SPLASH_DURATION_MS } from "@/features/onboarding/constants/splash";
 import { SplashGateContext } from "@/shared/layout/SplashGateContext";
+import { shouldShowStartupSplash } from "@/shared/layout/startupSplash";
 
 type StartupSplashGateProps = Readonly<{
   children: React.ReactNode;
 }>;
 
+type SplashState = Readonly<{
+  isSplashComplete: boolean;
+  showSplash: boolean;
+}>;
+
+function resolveInitialSplashState(): SplashState {
+  const showSplash = shouldShowStartupSplash();
+  return {
+    isSplashComplete: !showSplash,
+    showSplash,
+  };
+}
+
 /**
- * 앱 시작(/) 시 스플래시를 한 번 보여준 뒤 children 을 노출한다.
- * children 은 스플래시와 병렬로 마운트되어 인증 체크 등을 미리 진행할 수 있다.
- * 라우팅 전환은 isSplashComplete 가 true 가 된 뒤에만 수행해야 스플래시가 중간에 끊기지 않는다.
+ * `/` 첫 접속·새로고침 시에만 스플래시를 보여준다.
+ * 로그인 후 홈 이동, 하단 탭 전환 등에서는 스플래시를 띄우지 않는다.
  */
 export function StartupSplashGate({ children }: StartupSplashGateProps) {
-  const [isSplashComplete, setIsSplashComplete] = useState(false);
+  const [{ isSplashComplete, showSplash }, setSplashState] = useState(
+    resolveInitialSplashState,
+  );
 
   useEffect(() => {
+    if (!showSplash) return;
+
     const timer = window.setTimeout(() => {
-      setIsSplashComplete(true);
+      setSplashState({ isSplashComplete: true, showSplash: false });
     }, SPLASH_DURATION_MS);
 
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [showSplash]);
 
   return (
     <SplashGateContext.Provider value={{ isSplashComplete }}>
       <div className="relative flex min-h-0 flex-1 flex-col">
         {children}
-        {!isSplashComplete ? (
+        {showSplash ? (
           <div className="absolute inset-0 z-50 flex flex-col">
             <OnboardingSplash />
           </div>
