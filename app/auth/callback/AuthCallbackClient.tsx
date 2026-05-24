@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import type { CurrentUser } from "@/shared/auth/currentUser";
 import { fetchCurrentUser } from "@/shared/auth/fetchCurrentUser";
+import { navigateAfterAuth } from "@/shared/auth/navigateAfterAuth";
 import { resolvePostAuthDestination } from "@/shared/auth/resolvePostAuthDestination";
 import { setSessionMarker } from "@/shared/auth/tokenStorage";
 import { ErrorScreen } from "@/shared/layout/ErrorScreen";
@@ -25,15 +26,10 @@ function parseBooleanParam(value: string | null) {
   return undefined;
 }
 
-function resolveDestination(
-  newUser: string | null,
-  profileComplete: string | null,
-  user: CurrentUser,
-): string {
+function resolveDestination(newUser: string | null, user: CurrentUser): string {
   return resolvePostAuthDestination({
     newUser: parseBooleanParam(newUser),
-    profileComplete:
-      user.profileComplete ?? parseBooleanParam(profileComplete),
+    profileComplete: user.profileComplete,
   });
 }
 
@@ -69,7 +65,7 @@ export function AuthCallbackClient({
 
       // 다음 진입(`/`) 에서 서버 사이드 fallback 결정을 위해 세션 마커 쿠키를 둔다.
       setSessionMarker();
-      router.replace(resolveDestination(newUser, profileComplete, user));
+      navigateAfterAuth(router, resolveDestination(newUser, user));
     }
 
     void completeAuth();
