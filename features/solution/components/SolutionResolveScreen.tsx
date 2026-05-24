@@ -104,6 +104,7 @@ export function SolutionResolveScreen() {
 
         <BottomActionBar
           actionLabel="확인"
+          actionTextStyle="title-sm"
           bottomSpacing="compact"
           className="shrink-0 bg-background"
           onAction={handleConfirm}
@@ -149,6 +150,7 @@ export function SolutionResolveScreen() {
 
       <BottomActionBar
         actionLabel="이걸로 해결하기"
+        actionTextStyle="title-sm"
         bottomSpacing="compact"
         className="shrink-0 bg-background"
         onAction={handleResolve}
