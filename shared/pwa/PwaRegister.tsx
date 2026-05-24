@@ -12,20 +12,37 @@ export function PwaRegister() {
     }
 
     const registerServiceWorker = () => {
-      navigator.serviceWorker.register("/sw.js").catch((error: unknown) => {
-        console.error("Service worker registration failed:", error);
-      });
+      navigator.serviceWorker
+        .register("/sw.js", { updateViaCache: "none" })
+        .then((registration) => {
+          void registration.update();
+        })
+        .catch((error: unknown) => {
+          console.error("Service worker registration failed:", error);
+        });
     };
+
+    const handleControllerChange = () => {
+      window.location.reload();
+    };
+
+    navigator.serviceWorker.addEventListener(
+      "controllerchange",
+      handleControllerChange,
+    );
 
     if (document.readyState === "complete") {
       registerServiceWorker();
-      return;
+    } else {
+      window.addEventListener("load", registerServiceWorker);
     }
-
-    window.addEventListener("load", registerServiceWorker);
 
     return () => {
       window.removeEventListener("load", registerServiceWorker);
+      navigator.serviceWorker.removeEventListener(
+        "controllerchange",
+        handleControllerChange,
+      );
     };
   }, []);
 
