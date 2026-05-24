@@ -3,12 +3,12 @@
 import { useState } from "react";
 
 import { OnboardingExitConfirmModal } from "@/features/onboarding/components/OnboardingExitConfirmModal";
-import { LoadingScreen } from "@/shared/layout/LoadingScreen";
 import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
 import { BottomActionBar } from "@/shared/ui/BottomActionBar";
 
 type OnboardingConnectionScreenProps = Readonly<{
   onBack: () => void;
+  onComplete: () => void;
 }>;
 
 const connectionBenefits = [
@@ -19,13 +19,9 @@ const connectionBenefits = [
 
 export function OnboardingConnectionScreen({
   onBack,
+  onComplete,
 }: OnboardingConnectionScreenProps) {
   const [showRequiredDialog, setShowRequiredDialog] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-
-  if (isConnecting) {
-    return <LoadingScreen />;
-  }
 
   return (
     <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-background text-grayscale-1000">
@@ -66,7 +62,7 @@ export function OnboardingConnectionScreen({
       <BottomActionBar
         actionLabel="연결하기"
         actionTextStyle="title-sm"
-        onAction={() => setIsConnecting(true)}
+        onAction={onComplete}
         onSecondary={() => setShowRequiredDialog(true)}
         secondaryLabel="나중에 할게요"
         secondaryPosition="above"
@@ -76,7 +72,7 @@ export function OnboardingConnectionScreen({
         <OnboardingExitConfirmModal
           onPrimary={() => {
             setShowRequiredDialog(false);
-            setIsConnecting(true);
+            onComplete();
           }}
           onSecondary={() => setShowRequiredDialog(false)}
           primaryLabel="연결하기"

@@ -26,14 +26,14 @@ type BottomActionBarProps = Readonly<{
 }>;
 
 const topSpacingClassNames: Record<BottomActionBarTopSpacing, string> = {
-  default: "pt-4",
+  default: "pt-[17px]",
   large: "pt-8",
   none: "pt-0",
 };
 
 const bottomSpacingClassNames: Record<BottomActionBarBottomSpacing, string> = {
   compact: "pb-[max(24px,env(safe-area-inset-bottom))]",
-  default: "pb-[max(30px,env(safe-area-inset-bottom))]",
+  default: "pb-[max(27px,env(safe-area-inset-bottom))]",
 };
 
 const secondaryBaseClassNames: Record<BottomActionBarSecondaryPosition, string> =
@@ -77,7 +77,7 @@ export function BottomActionBar({
 
   return (
     <footer
-      className={`px-6 ${topSpacingClassNames[topSpacing]} ${bottomSpacingClassNames[bottomSpacing]} ${className}`}
+      className={`bg-background px-6 shadow-1 ${topSpacingClassNames[topSpacing]} ${bottomSpacingClassNames[bottomSpacing]} ${className}`}
     >
       {secondaryPosition === "above" ? secondaryAction : null}
       <BottomActionButton

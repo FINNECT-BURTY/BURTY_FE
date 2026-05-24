@@ -16,7 +16,13 @@ type MainRouteGuardProps = Readonly<{
   unauthenticatedFallback?: React.ReactNode;
 }>;
 
-type AuthStatus = "checking" | "authenticated" | "unauthenticated";
+type AuthStatus =
+  | "checking"
+  | "authenticated"
+  | "unauthenticated"
+  | "needs-onboarding";
+
+const ONBOARDING_REDIRECT_PATH = "/onboarding?step=agreement&newUser=true";
 
 export function MainRouteGuard({
   children,
@@ -24,7 +30,6 @@ export function MainRouteGuard({
   unauthenticatedFallback,
 }: MainRouteGuardProps) {
   const router = useRouter();
-  const hasUnauthenticatedFallback = unauthenticatedFallback !== undefined;
   const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
@@ -35,19 +40,34 @@ export function MainRouteGuard({
       try {
         const user = await fetchCurrentUser();
 
-        if (user) {
-          if (mounted) {
-            setCurrentUser(user);
-            setAuthStatus("authenticated");
+        if (!mounted) return;
+
+        if (!user) {
+          if (unauthenticatedFallback !== undefined) {
+            setAuthStatus("unauthenticated");
+            return;
           }
+
+          router.replace("/onboarding");
           return;
         }
+
+        // 백엔드에서 profileComplete 를 명시적으로 true 로 내려준 경우에만 홈으로 진입한다.
+        // undefined / false 모두 안전하게 온보딩으로 보낸다.
+        if (user.profileComplete !== true) {
+          setAuthStatus("needs-onboarding");
+          router.replace(ONBOARDING_REDIRECT_PATH);
+          return;
+        }
+
+        setCurrentUser(user);
+        setAuthStatus("authenticated");
       } catch (error) {
         console.error("Auth check failed:", error);
-      }
 
-      if (mounted) {
-        if (hasUnauthenticatedFallback) {
+        if (!mounted) return;
+
+        if (unauthenticatedFallback !== undefined) {
           setAuthStatus("unauthenticated");
           return;
         }
@@ -61,14 +81,14 @@ export function MainRouteGuard({
     return () => {
       mounted = false;
     };
-  }, [hasUnauthenticatedFallback, router]);
+  }, [router, unauthenticatedFallback]);
 
-  if (authStatus !== "authenticated") {
-    if (unauthenticatedFallback) {
-      return unauthenticatedFallback;
-    }
-
+  if (authStatus === "checking" || authStatus === "needs-onboarding") {
     return checkingFallback ?? <LoadingScreen />;
+  }
+
+  if (authStatus === "unauthenticated") {
+    return unauthenticatedFallback ?? checkingFallback ?? <LoadingScreen />;
   }
 
   return currentUser ? (

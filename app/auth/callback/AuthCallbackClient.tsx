@@ -17,6 +17,7 @@ type AuthCallbackClientProps = Readonly<{
 
 const LOGIN_ENTRY_PATH = "/onboarding";
 const LOGIN_ENTRY_DIRECT_PATH = "/onboarding?step=entry";
+const ONBOARDING_AGREEMENT_PATH = `${LOGIN_ENTRY_PATH}?step=agreement&newUser=true`;
 
 function parseBooleanParam(value: string | null) {
   if (value === "true") return true;
@@ -24,23 +25,25 @@ function parseBooleanParam(value: string | null) {
   return null;
 }
 
-/** BE BFF 콜백 후 미완료 유저만 필수 온보딩 플로우로 진입한다. */
+/**
+ * BE BFF 콜백 후 최종 라우팅을 결정한다.
+ * - newUser=true 이거나 profileComplete=false 인 경우 무조건 온보딩으로 보낸다.
+ * - 그 외에는 /auth/me 응답의 profileComplete 가 명시적으로 true 일 때만 홈으로 진입한다.
+ *   (profileComplete 가 없거나 false 이면 안전하게 온보딩으로 보낸다.)
+ */
 function resolveDestination(
   newUser: string | null,
   profileComplete: string | null,
-  user?: CurrentUser,
+  user: CurrentUser,
 ): string {
-  const completedProfile = parseBooleanParam(profileComplete);
+  if (newUser === "true") return ONBOARDING_AGREEMENT_PATH;
 
-  if (
-    newUser === "true" ||
-    completedProfile === false ||
-    user?.profileComplete === false
-  ) {
-    return `${LOGIN_ENTRY_PATH}?step=agreement&newUser=true`;
-  }
+  const completedFromParam = parseBooleanParam(profileComplete);
+  if (completedFromParam === false) return ONBOARDING_AGREEMENT_PATH;
 
-  return "/";
+  if (user.profileComplete === true) return "/";
+
+  return ONBOARDING_AGREEMENT_PATH;
 }
 
 export function AuthCallbackClient({
@@ -53,35 +56,28 @@ export function AuthCallbackClient({
   const [callbackFailed, setCallbackFailed] = useState(false);
 
   useEffect(() => {
+    if (error === "user_cancelled") {
+      router.replace(LOGIN_ENTRY_DIRECT_PATH);
+      return undefined;
+    }
+    if (error) return undefined;
+
     let mounted = true;
 
     async function completeAuth() {
-      if (error) return;
       setCallbackFailed(false);
 
       const user = await fetchCurrentUser().catch(() => null);
       if (!mounted) return;
 
       if (!user) {
-        const completedProfile = parseBooleanParam(profileComplete);
-
-        if (completedProfile !== null || newUser !== null) {
-          router.replace(resolveDestination(newUser, profileComplete));
-          return;
-        }
-
+        // 인증이 정상 동작하지 않은 경우. 폴백 라우팅 대신 에러 화면을 보여준다.
         setCallbackFailed(true);
         return;
       }
 
       router.replace(resolveDestination(newUser, profileComplete, user));
     }
-
-    if (error === "user_cancelled") {
-      router.replace(LOGIN_ENTRY_DIRECT_PATH);
-      return undefined;
-    }
-    if (error) return undefined;
 
     void completeAuth();
 

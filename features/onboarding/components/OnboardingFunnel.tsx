@@ -8,6 +8,7 @@ import { OnboardingQuestionStep } from "@/features/onboarding/steps/OnboardingQu
 
 type OnboardingFunnelProps = Readonly<{
   onBackToProfile: () => void;
+  onComplete: () => void;
 }>;
 
 type OnboardingStepId = (typeof ONBOARDING_STEPS)[number]["id"];
@@ -26,7 +27,10 @@ function getStepIndex(stepIndex: number, totalSteps: number) {
   return Math.min(Math.max(stepIndex, 0), totalSteps - 1);
 }
 
-export function OnboardingFunnel({ onBackToProfile }: OnboardingFunnelProps) {
+export function OnboardingFunnel({
+  onBackToProfile,
+  onComplete,
+}: OnboardingFunnelProps) {
   const [view, setView] = useState<OnboardingView>({
     type: "questions",
     stepIndex: 0,
@@ -39,6 +43,7 @@ export function OnboardingFunnel({ onBackToProfile }: OnboardingFunnelProps) {
     return (
       <OnboardingConnectionScreen
         onBack={() => setView({ type: "questions", stepIndex: totalSteps - 1 })}
+        onComplete={onComplete}
       />
     );
   }

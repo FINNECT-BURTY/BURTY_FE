@@ -15,12 +15,14 @@ import { OnboardingHeader } from "@/shared/layout/OnboardingHeader";
 import { BottomActionBar } from "@/shared/ui/BottomActionBar";
 
 type ProfileResponse = Readonly<{
-  success: boolean;
-  message: string;
+  success?: boolean;
+  message?: string;
   data?: Readonly<{
     completed?: boolean;
+    profileComplete?: boolean;
+    profileCompleted?: boolean;
     alreadyRegistered?: boolean;
-  }>;
+  }> | null;
   errorCode?: string | null;
 }>;
 
@@ -86,11 +88,17 @@ export function OnboardingProfileScreen({
         method: "POST",
       });
 
-      const result = (await response.json()) as ProfileResponse;
-      const profileCompleted =
-        result.data?.completed === true || result.data?.alreadyRegistered === true;
-      if (!response.ok || !result.success || !profileCompleted) {
-        throw new Error(result.message || "Profile onboarding failed.");
+      const result = (await response.json().catch(() => null)) as
+        | ProfileResponse
+        | null;
+
+      if (response.status === 401 || response.status === 403) {
+        window.location.replace("/onboarding?step=entry");
+        return;
+      }
+
+      if (!response.ok || result?.success === false) {
+        throw new Error(result?.message || "Profile onboarding failed.");
       }
 
       onComplete();
@@ -131,7 +139,7 @@ export function OnboardingProfileScreen({
           <label className="flex flex-col gap-2">
             <span className="text-title-sm text-grayscale-1000">이름</span>
             <input
-              className="text-body-lg h-13 rounded-2xl border border-grayscale-200 bg-white px-4 text-grayscale-1000 outline-none focus:border-yellow-500"
+              className="text-body-lg h-13 rounded-2xl border border-grayscale-200 bg-white px-4 text-grayscale-1000 outline-none focus:border-grayscale-700"
               maxLength={30}
               onChange={(event) => setName(event.target.value)}
               placeholder="본인 실명을 입력해 주세요."
@@ -142,7 +150,7 @@ export function OnboardingProfileScreen({
           <label className="flex flex-col gap-2">
             <span className="text-title-sm text-grayscale-1000">휴대폰 번호</span>
             <input
-              className="text-body-lg h-13 rounded-2xl border border-grayscale-200 bg-white px-4 text-grayscale-1000 outline-none focus:border-yellow-500"
+              className="text-body-lg h-13 rounded-2xl border border-grayscale-200 bg-white px-4 text-grayscale-1000 outline-none focus:border-grayscale-700"
               inputMode="tel"
               maxLength={13}
               onChange={(event) => setPhone(event.target.value)}
