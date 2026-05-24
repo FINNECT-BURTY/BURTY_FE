@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "AI 생활금융 에이전트",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Berty",
   },
   // TODO: Open Graph 추가

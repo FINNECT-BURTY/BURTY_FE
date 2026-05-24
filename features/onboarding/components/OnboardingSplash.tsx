@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 const SPLASH_STAGE_TIMINGS_MS = [1200, 3800, 6400] as const;
 const SPLASH_TEXT_TOP_CLASS_NAME = "top-[41.25%]";
-const SPLASH_LOGO_TOP_CLASS_NAME = "top-[36%]";
+const SPLASH_LOGO_TOP_CLASS_NAME = "top-[39.8%]";
 const SPLASH_SCENES = [
   {
     label: "스플래시 시작",
@@ -102,7 +102,7 @@ export function OnboardingSplash() {
                 alt=""
                 aria-hidden="true"
                 className={`absolute left-1/2 ${SPLASH_LOGO_TOP_CLASS_NAME} h-auto w-[188px] -translate-x-1/2`}
-                height={188}
+                height={73}
                 priority
                 src={scene.logoSrc}
                   width={188}
