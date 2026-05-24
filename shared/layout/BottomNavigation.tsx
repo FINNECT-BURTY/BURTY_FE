@@ -51,7 +51,7 @@ export function BottomNavigation() {
   return (
     <nav
       aria-label="하단 내비게이션"
-      className="grid min-h-18 shrink-0 grid-cols-5 rounded-t-2xl bg-background px-2 pb-[env(safe-area-inset-bottom)] shadow-1"
+      className="grid min-h-18 shrink-0 grid-cols-5 rounded-t-2xl bg-background px-2 pt-2 pb-[env(safe-area-inset-bottom)] shadow-1"
     >
       {bottomNavigationItems.map(
         ({ label, href, activeIconSrc, defaultIconSrc }) => {

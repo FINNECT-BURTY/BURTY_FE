@@ -9,6 +9,7 @@ import {
 } from "@/shared/auth/currentUser";
 import { fetchCurrentUser } from "@/shared/auth/fetchCurrentUser";
 import { LoadingScreen } from "@/shared/layout/LoadingScreen";
+import { useSplashGate } from "@/shared/layout/SplashGateContext";
 
 type MainRouteGuardProps = Readonly<{
   children: React.ReactNode;
@@ -30,8 +31,17 @@ export function MainRouteGuard({
   unauthenticatedFallback,
 }: MainRouteGuardProps) {
   const router = useRouter();
+  const { isSplashComplete } = useSplashGate();
   const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [pendingRedirect, setPendingRedirect] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isSplashComplete || !pendingRedirect) return;
+    router.replace(pendingRedirect);
+    const timer = window.setTimeout(() => setPendingRedirect(null), 0);
+    return () => window.clearTimeout(timer);
+  }, [isSplashComplete, pendingRedirect, router]);
 
   useEffect(() => {
     let mounted = true;
@@ -48,7 +58,7 @@ export function MainRouteGuard({
             return;
           }
 
-          router.replace("/onboarding");
+          setPendingRedirect("/onboarding");
           return;
         }
 
@@ -56,7 +66,7 @@ export function MainRouteGuard({
         // undefined / false 모두 안전하게 온보딩으로 보낸다.
         if (user.profileComplete !== true) {
           setAuthStatus("needs-onboarding");
-          router.replace(ONBOARDING_REDIRECT_PATH);
+          setPendingRedirect(ONBOARDING_REDIRECT_PATH);
           return;
         }
 
@@ -72,7 +82,7 @@ export function MainRouteGuard({
           return;
         }
 
-        router.replace("/onboarding");
+        setPendingRedirect("/onboarding");
       }
     }
 
