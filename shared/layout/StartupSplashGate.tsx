@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import { OnboardingSplash } from "@/features/onboarding/components/OnboardingSplash";
 import { SPLASH_DURATION_MS } from "@/features/onboarding/constants/splash";
 import { SplashGateContext } from "@/shared/layout/SplashGateContext";
-import { shouldShowStartupSplash } from "@/shared/layout/startupSplash";
+import {
+  markStartupSplashFinished,
+  shouldShowStartupSplash,
+} from "@/shared/layout/startupSplash";
 
 type StartupSplashGateProps = Readonly<{
   children: React.ReactNode;
@@ -37,6 +40,7 @@ export function StartupSplashGate({ children }: StartupSplashGateProps) {
     if (!showSplash) return;
 
     const timer = window.setTimeout(() => {
+      markStartupSplashFinished();
       setSplashState({ isSplashComplete: true, showSplash: false });
     }, SPLASH_DURATION_MS);
 

@@ -16,11 +16,7 @@ export function resolvePostAuthDestination({
   newUser,
   profileComplete,
 }: ResolvePostAuthDestinationInput): string {
-  if (profileComplete === true) {
-    return "/";
-  }
-
-  if (newUser === false) {
+  if (profileComplete === true || newUser === false) {
     return "/";
   }
 
