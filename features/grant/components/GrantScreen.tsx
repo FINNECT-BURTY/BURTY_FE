@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
-  fetchYouthPolicies,
+  fetchYouthPoliciesPage,
   type YouthPolicyDomain,
   type YouthPolicySummary,
 } from "@/features/grant/api/youthPolicy";
@@ -22,6 +22,14 @@ import { BottomActionButton } from "@/shared/ui/BottomActionButton";
 
 type CategoryFilter = "all" | YouthPolicyDomain;
 
+type CategoryListState = Readonly<{
+  hasMore: boolean;
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  page: number;
+  policies: readonly YouthPolicySummary[];
+}>;
+
 const categoryItems: readonly Readonly<{
   label: string;
   value: CategoryFilter;
@@ -35,7 +43,6 @@ const categoryItems: readonly Readonly<{
 
 const FEATURED_HEADLINE_FALLBACK = "지금 신청 가능한 지원 정책이 있어요";
 const LIST_PAGE_SIZE = 30;
-const ALL_FETCH_SIZE = 50;
 
 function buildFeaturedHeadline(daysUntilDeadline: number | null): string {
   if (daysUntilDeadline === null) return FEATURED_HEADLINE_FALLBACK;
@@ -48,63 +55,130 @@ function openExternalUrl(url: string) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
-type PoliciesByCategory = Partial<
-  Record<CategoryFilter, readonly YouthPolicySummary[]>
->;
+function resolveDomain(
+  category: CategoryFilter,
+): YouthPolicyDomain | undefined {
+  return category === "all" ? undefined : category;
+}
+
+function createInitialCategoryState(): CategoryListState {
+  return {
+    hasMore: false,
+    isLoading: false,
+    isLoadingMore: false,
+    page: -1,
+    policies: [],
+  };
+}
 
 export function GrantScreen() {
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryFilter>("all");
-  const [policiesByCategory, setPoliciesByCategory] =
-    useState<PoliciesByCategory>({});
+  const [categoryStates, setCategoryStates] = useState<
+    Partial<Record<CategoryFilter, CategoryListState>>
+  >({});
   const [featured, setFeatured] = useState<YouthPolicySummary | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isCategoryLoading, setIsCategoryLoading] = useState(false);
+  const categoryStatesRef = useRef(categoryStates);
 
   useEffect(() => {
-    let mounted = true;
+    categoryStatesRef.current = categoryStates;
+  }, [categoryStates]);
 
-    void (async () => {
-      const data = await fetchYouthPolicies({ size: ALL_FETCH_SIZE });
-      if (!mounted) return;
+  const loadPolicies = useCallback(
+    async (category: CategoryFilter, page: number, mode: "append" | "replace") => {
+      const isFirstPage = page === 0;
 
-      setPoliciesByCategory((prev) => ({ ...prev, all: data }));
-      setFeatured(pickFeaturedPolicy(data));
-      setIsInitialLoading(false);
-    })();
+      setCategoryStates((prev) => ({
+        ...prev,
+        [category]: {
+          ...(prev[category] ?? createInitialCategoryState()),
+          isLoading: isFirstPage,
+          isLoadingMore: !isFirstPage,
+        },
+      }));
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (selectedCategory === "all") return;
-    if (policiesByCategory[selectedCategory]) return;
-
-    let mounted = true;
-
-    void (async () => {
-      setIsCategoryLoading(true);
-      const data = await fetchYouthPolicies({
-        domain: selectedCategory,
+      const result = await fetchYouthPoliciesPage({
+        domain: resolveDomain(category),
+        page,
         size: LIST_PAGE_SIZE,
       });
-      if (!mounted) return;
 
-      setPoliciesByCategory((prev) => ({ ...prev, [selectedCategory]: data }));
-      setIsCategoryLoading(false);
+      setCategoryStates((prev) => {
+        const current = prev[category] ?? createInitialCategoryState();
+        const policies =
+          mode === "append"
+            ? [...current.policies, ...result.policies]
+            : result.policies;
+
+        return {
+          ...prev,
+          [category]: {
+            hasMore: result.hasMore,
+            isLoading: false,
+            isLoadingMore: false,
+            page: result.page,
+            policies,
+          },
+        };
+      });
+
+      if (category === "all" && isFirstPage) {
+        setFeatured(pickFeaturedPolicy(result.policies));
+      }
+
+      return result;
+    },
+    [],
+  );
+
+  const loadFirstPageIfNeeded = useCallback(
+    async (category: CategoryFilter) => {
+      const current = categoryStatesRef.current[category];
+      if (current && current.page >= 0) return;
+      if (current?.isLoading) return;
+
+      await loadPolicies(category, 0, "replace");
+    },
+    [loadPolicies],
+  );
+
+  useEffect(() => {
+    let mounted = true;
+
+    void (async () => {
+      await loadPolicies("all", 0, "replace");
+      if (mounted) {
+        setIsInitialLoading(false);
+      }
     })();
 
     return () => {
       mounted = false;
     };
-  }, [selectedCategory, policiesByCategory]);
+  }, [loadPolicies]);
 
-  const visiblePolicies = policiesByCategory[selectedCategory] ?? [];
-  const isListLoading = selectedCategory === "all"
-    ? isInitialLoading
-    : isCategoryLoading;
+  const handleCategoryChange = (category: CategoryFilter) => {
+    setSelectedCategory(category);
+    void loadFirstPageIfNeeded(category);
+  };
+
+  const currentState =
+    categoryStates[selectedCategory] ?? createInitialCategoryState();
+  const visiblePolicies = currentState.policies;
+  const isListLoading = currentState.isLoading && visiblePolicies.length === 0;
+
+  const handleLoadMore = () => {
+    if (
+      currentState.isLoadingMore ||
+      !currentState.hasMore ||
+      currentState.page < 0
+    ) {
+      return;
+    }
+
+    void loadPolicies(selectedCategory, currentState.page + 1, "append");
+  };
 
   const featuredHashtags = useMemo(
     () => (featured ? extractHashtags(featured) : []),
@@ -184,7 +258,7 @@ export function GrantScreen() {
                       : "border-grayscale-200 bg-background text-grayscale-800"
                   }`}
                   key={item.value}
-                  onClick={() => setSelectedCategory(item.value)}
+                  onClick={() => handleCategoryChange(item.value)}
                   type="button"
                 >
                   {item.label}
@@ -194,7 +268,7 @@ export function GrantScreen() {
           </div>
 
           <div className="mt-4 space-y-4">
-            {isListLoading && visiblePolicies.length === 0 ? (
+            {isListLoading ? (
               <div
                 aria-busy="true"
                 aria-live="polite"
@@ -254,6 +328,18 @@ export function GrantScreen() {
                 </article>
               );
             })}
+
+            {currentState.hasMore ? (
+              <button
+                aria-busy={currentState.isLoadingMore}
+                className="text-body-md w-full rounded-2xl border border-grayscale-200 bg-background py-3 text-grayscale-800 disabled:text-grayscale-400"
+                disabled={currentState.isLoadingMore}
+                onClick={handleLoadMore}
+                type="button"
+              >
+                {currentState.isLoadingMore ? "불러오는 중..." : "더보기"}
+              </button>
+            ) : null}
           </div>
         </section>
       </section>
