@@ -30,10 +30,21 @@ export type YouthPolicySummary = Readonly<{
   updatedAt?: string;
 }>;
 
+export type YouthPolicyPageResult = Readonly<{
+  hasMore: boolean;
+  page: number;
+  policies: readonly YouthPolicySummary[];
+  totalElements: number;
+}>;
+
 type YouthPolicyListResponse = Readonly<{
   success?: boolean;
   data?: Readonly<{
     content?: YouthPolicySummary[];
+    last?: boolean;
+    number?: number;
+    totalElements?: number;
+    totalPages?: number;
   }> | null;
 }>;
 
@@ -46,13 +57,36 @@ type FetchYouthPoliciesParams = Readonly<{
 
 const SEARCH_ENDPOINT = "/api/v1/youth-policies/search";
 
-export async function fetchYouthPolicies(
+const EMPTY_PAGE_RESULT: YouthPolicyPageResult = {
+  hasMore: false,
+  page: 0,
+  policies: [],
+  totalElements: 0,
+};
+
+function resolveHasMore(
+  data: NonNullable<YouthPolicyListResponse["data"]>,
+  page: number,
+): boolean {
+  if (typeof data.last === "boolean") {
+    return !data.last;
+  }
+
+  if (typeof data.totalPages === "number") {
+    return page + 1 < data.totalPages;
+  }
+
+  return false;
+}
+
+export async function fetchYouthPoliciesPage(
   params: FetchYouthPoliciesParams = {},
-): Promise<readonly YouthPolicySummary[]> {
+): Promise<YouthPolicyPageResult> {
+  const page = params.page ?? 0;
   const query = new URLSearchParams();
   if (params.domain) query.set("domain", params.domain);
   if (params.keyword) query.set("keyword", params.keyword);
-  query.set("page", String(params.page ?? 0));
+  query.set("page", String(page));
   query.set("size", String(params.size ?? 30));
 
   try {
@@ -65,12 +99,21 @@ export async function fetchYouthPolicies(
       | YouthPolicyListResponse
       | null;
 
-    if (!response.ok || json?.success !== true) return [];
+    if (!response.ok || json?.success !== true || !json.data) {
+      return EMPTY_PAGE_RESULT;
+    }
 
-    const content = json.data?.content;
-    return Array.isArray(content) ? content : [];
+    const content = json.data.content;
+    const policies = Array.isArray(content) ? content : [];
+
+    return {
+      hasMore: resolveHasMore(json.data, page),
+      page: json.data.number ?? page,
+      policies,
+      totalElements: json.data.totalElements ?? policies.length,
+    };
   } catch (error) {
     console.error("Failed to fetch youth policies:", error);
-    return [];
+    return EMPTY_PAGE_RESULT;
   }
 }
