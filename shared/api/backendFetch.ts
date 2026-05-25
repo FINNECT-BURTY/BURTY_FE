@@ -1,4 +1,5 @@
 import { getPublicApiBaseUrl } from "@/shared/api/config";
+import { isJwtExpired } from "@/shared/auth/jwtSubject";
 import {
   clearAuthTokens,
   clearSessionMarker,
@@ -20,18 +21,52 @@ type RefreshResponse = Readonly<{
   data?: RefreshTokenPair | null;
 }>;
 
-function buildHeaders(init: BackendFetchInit, accessToken: string | null) {
+const AUTH_CREDENTIAL_ENDPOINTS = [
+  "/api/v1/auth/email/login",
+  "/api/v1/auth/email/register",
+] as const;
+
+function isAuthCredentialRequest(url: string) {
+  return AUTH_CREDENTIAL_ENDPOINTS.some((endpoint) => url.includes(endpoint));
+}
+
+function buildHeaders(
+  init: BackendFetchInit,
+  accessToken: string | null,
+  includeBearer: boolean,
+) {
   const baseHeaders: HeadersInit = {
     Accept: "application/json",
     ...init.headers,
   };
 
-  if (!accessToken) return baseHeaders;
+  if (!includeBearer || !accessToken) return baseHeaders;
 
   return {
     ...baseHeaders,
     Authorization: `Bearer ${accessToken}`,
   };
+}
+
+function resolveAccessTokenForRequest(url: string): string | null {
+  if (isAuthCredentialRequest(url)) return null;
+
+  const accessToken = getAccessToken();
+  if (!accessToken || isJwtExpired(accessToken)) return null;
+
+  return accessToken;
+}
+
+async function fetchBackend(
+  url: string,
+  init: BackendFetchInit,
+  accessToken: string | null,
+) {
+  return fetch(url, {
+    ...init,
+    credentials: "include",
+    headers: buildHeaders(init, accessToken, accessToken !== null),
+  });
 }
 
 /**
@@ -96,7 +131,14 @@ async function refreshSession(base: string): Promise<boolean> {
  * GET /users/me/name 은 bearerAuth 로만 문서화되어 있다.
  */
 export async function hydrateAuthTokensFromCookieSession(): Promise<boolean> {
-  if (hasAuthTokens()) return true;
+  const accessToken = getAccessToken();
+  if (accessToken && !isJwtExpired(accessToken) && hasAuthTokens()) {
+    return true;
+  }
+
+  if (hasAuthTokens()) {
+    clearAuthTokens();
+  }
 
   const base = getPublicApiBaseUrl();
   let response: Response;
@@ -155,12 +197,23 @@ export async function backendFetch(
     ? path
     : `${base}${path.startsWith("/") ? path : `/${path}`}`;
 
-  const accessToken = getAccessToken();
-  const response = await fetch(url, {
-    ...init,
-    credentials: "include",
-    headers: buildHeaders(init, accessToken),
-  });
+  const accessToken = resolveAccessTokenForRequest(url);
+  let response = await fetchBackend(url, init, accessToken);
+
+  const shouldRetryWithoutBearer =
+    response.status === 401 &&
+    accessToken !== null &&
+    !isAuthCredentialRequest(url);
+
+  if (shouldRetryWithoutBearer) {
+    // BE는 Authorization Bearer를 쿠키보다 우선한다. 만료·타 사용자 토큰이
+    // 남아 있으면 유효한 HttpOnly 세션도 401이 난다.
+    const cookieOnlyResponse = await fetchBackend(url, init, null);
+    if (cookieOnlyResponse.status !== 401) {
+      return cookieOnlyResponse;
+    }
+    response = cookieOnlyResponse;
+  }
 
   const shouldRetryWithRefresh =
     response.status === 401 &&
@@ -176,9 +229,5 @@ export async function backendFetch(
     return response;
   }
 
-  return fetch(url, {
-    ...init,
-    credentials: "include",
-    headers: buildHeaders(init, getAccessToken()),
-  });
+  return fetchBackend(url, init, resolveAccessTokenForRequest(url));
 }
