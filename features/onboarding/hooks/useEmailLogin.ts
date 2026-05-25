@@ -4,7 +4,11 @@ import { useCallback, useState } from "react";
 import { backendFetch } from "@/shared/api/backendFetch";
 import { navigateAfterAuth } from "@/shared/auth/navigateAfterAuth";
 import { resolvePostAuthDestination } from "@/shared/auth/resolvePostAuthDestination";
-import { setAuthTokens, setSessionMarker } from "@/shared/auth/tokenStorage";
+import {
+  clearAuthTokens,
+  setAuthTokens,
+  setSessionMarker,
+} from "@/shared/auth/tokenStorage";
 
 type EmailLoginResponseData = Readonly<{
   userId?: string;
@@ -35,7 +39,7 @@ type UseEmailLoginResult = Readonly<{
 
 function resolveDestination(data: EmailLoginResponseData): string {
   return resolvePostAuthDestination({
-    newUser: data.newUser,
+    authSource: "email",
     profileComplete: data.profileComplete,
   });
 }
@@ -53,6 +57,9 @@ export function useEmailLogin(): UseEmailLoginResult {
       setErrorMessage("");
 
       try {
+        // 이전 세션 Bearer가 남아 있으면 BE가 login 자체를 401로 거절한다.
+        clearAuthTokens();
+
         const response = await backendFetch("/api/v1/auth/email/login", {
           body: JSON.stringify({ email: email.trim(), password }),
           headers: { "Content-Type": "application/json" },

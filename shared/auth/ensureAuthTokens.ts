@@ -1,5 +1,5 @@
 import { hydrateAuthTokensFromCookieSession } from "@/shared/api/backendFetch";
-import { readJwtSubject } from "@/shared/auth/jwtSubject";
+import { isJwtExpired, readJwtSubject } from "@/shared/auth/jwtSubject";
 import {
   clearAuthTokens,
   getAccessToken,
@@ -11,11 +11,15 @@ import {
  * BFF 쿠키 세션(refresh)으로 다시 맞춘다.
  */
 export async function ensureAuthTokensForUser(userId?: string): Promise<void> {
-  if (userId && hasAuthTokens()) {
+  if (hasAuthTokens()) {
     const accessToken = getAccessToken();
     const subject = accessToken ? readJwtSubject(accessToken) : null;
 
-    if (subject && subject !== userId) {
+    if (
+      !accessToken ||
+      isJwtExpired(accessToken) ||
+      (userId && subject && subject !== userId)
+    ) {
       clearAuthTokens();
     }
   }
