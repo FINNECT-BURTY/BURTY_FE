@@ -29,6 +29,7 @@ function parseBooleanParam(value: string | null) {
 
 function resolveDestination(newUser: string | null, user: CurrentUser): string {
   return resolvePostAuthDestination({
+    authSource: "social",
     newUser: parseBooleanParam(newUser),
     profileComplete: user.profileComplete,
   });

@@ -6,6 +6,10 @@ import { useState } from "react";
 
 import { backendFetch } from "@/shared/api/backendFetch";
 import { useCurrentUser } from "@/shared/auth/currentUser";
+import {
+  clearAuthTokens,
+  clearSessionMarker,
+} from "@/shared/auth/tokenStorage";
 import { BottomNavigation } from "@/shared/layout/BottomNavigation";
 import { MainHeader } from "@/shared/layout/MainHeader";
 import { ConfirmModal } from "@/shared/ui/ConfirmModal";
@@ -82,6 +86,8 @@ export function MyPageScreen() {
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
+      clearAuthTokens();
+      clearSessionMarker();
       router.replace("/onboarding?step=entry");
     }
   };
