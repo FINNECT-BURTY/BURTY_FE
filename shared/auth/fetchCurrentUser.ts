@@ -2,7 +2,12 @@ import { backendFetch, hydrateAuthTokensFromCookieSession } from "@/shared/api/b
 import type { CurrentUser } from "@/shared/auth/currentUser";
 import { getCachedDisplayName } from "@/shared/auth/displayNameCache";
 import { ensureAuthTokensForUser } from "@/shared/auth/ensureAuthTokens";
-import { clearAuthTokens } from "@/shared/auth/tokenStorage";
+import {
+  clearAuthTokens,
+  getAccessToken,
+  getRefreshToken,
+  setAuthTokens,
+} from "@/shared/auth/tokenStorage";
 
 type CurrentUserResponse = Readonly<{
   success: boolean;
@@ -127,6 +132,18 @@ async function fetchNameFromApi() {
   return resolveDisplayName(payload.data);
 }
 
+/**
+ * 표시 이름을 보조 엔드포인트에서 채운다.
+ *
+ * <p>이름 조회는 <b>표시용</b>이다. 여기서 실패했다고 인증 상태를 건드리면 안 된다.
+ *
+ * <p>예전에는 이름을 못 받으면 곧바로 토큰을 지우고 쿠키 세션으로 다시 맞추려 했다.
+ * 쿠키 세션이 없는 사용자(이메일 로그인·테스트 토큰)는 그 자리에서 <b>유효한 토큰을 잃고</b>
+ * 화면 전체가 미인증이 됐다. 프로필 행이 없는 계정에서 홈이 통째로 "불러오지 못했어요" 가
+ * 되는 형태로 드러났다.
+ *
+ * <p>쿠키 세션으로 다시 맞추는 시도는 남기되, 실패하면 원래 토큰을 되돌린다.
+ */
 async function fetchDisplayNameFromNameEndpoint(userId?: string) {
   try {
     await ensureAuthTokensForUser(userId);
@@ -134,9 +151,22 @@ async function fetchDisplayNameFromNameEndpoint(userId?: string) {
     const name = await fetchNameFromApi();
     if (name) return name;
 
-    // Bearer 가 남아 있으나 쿠키 세션과 어긋난 경우 한 번 더 쿠키 기준으로 맞춘다.
+    const savedAccessToken = getAccessToken();
+    const savedRefreshToken = getRefreshToken();
+
+    // Bearer 가 남아 있으나 쿠키 세션과 어긋난 경우를 한 번 더 시도한다.
     clearAuthTokens();
-    await hydrateAuthTokensFromCookieSession();
+    const rehydrated = await hydrateAuthTokensFromCookieSession();
+
+    if (!rehydrated) {
+      if (savedAccessToken && savedRefreshToken) {
+        setAuthTokens({
+          accessToken: savedAccessToken,
+          refreshToken: savedRefreshToken,
+        });
+      }
+      return null;
+    }
 
     return await fetchNameFromApi();
   } catch {

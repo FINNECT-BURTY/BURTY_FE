@@ -30,19 +30,26 @@ type AxisTickProps = Readonly<{
   y?: number;
 }>;
 
+/**
+ * 확대 구간.
+ *
+ * <p>날짜가 아니라 시계열 위치(1부터)로 나눈다. 예측은 오늘부터 30일이라 월 경계를 넘고,
+ * 날짜의 "일" 로 나누면 8월 30일과 9월 30일이 같은 구간에 들어간다.
+ */
 type ChartRange = Readonly<{
-  endDay: number;
+  end: number;
   label: string;
-  startDay: number;
+  start: number;
 }>;
 
 const chartRanges: readonly ChartRange[] = [
-  { endDay: 10, label: "1~10일", startDay: 1 },
-  { endDay: 20, label: "10~20일", startDay: 10 },
-  { endDay: 31, label: "20~31일", startDay: 20 },
+  { end: 10, label: "1~10일차", start: 1 },
+  { end: 20, label: "11~20일차", start: 11 },
+  { end: 31, label: "21일차 이후", start: 21 },
 ];
 
-const overviewTickDays = [1, 10, 20, 30] as const;
+/** 전체 보기에서 눈금을 찍을 위치. 촘촘하면 라벨이 겹친다. */
+const overviewTickPositions = [1, 10, 20, 30] as const;
 
 function AxisTick({
   payload,
@@ -122,7 +129,7 @@ export function AssetFlowChart({
     if (!selectedRange) return points;
     return points.filter(
       (point) =>
-        point.day >= selectedRange.startDay && point.day <= selectedRange.endDay,
+        point.index >= selectedRange.start && point.index <= selectedRange.end,
     );
   }, [points, selectedRange]);
 
@@ -134,8 +141,8 @@ export function AssetFlowChart({
         ...point,
         highlightedBalance:
           highlightedRange &&
-          point.day >= highlightedRange.startDay &&
-          point.day <= highlightedRange.endDay
+          point.index >= highlightedRange.start &&
+          point.index <= highlightedRange.end
             ? point.balance
             : null,
       })),
@@ -158,9 +165,9 @@ export function AssetFlowChart({
 
   const xAxisTicks = selectedRange
     ? visibleData.map((point) => point.label)
-    : overviewTickDays
-        .map((day) => `${day}일`)
-        .filter((label) => visibleData.some((point) => point.label === label));
+    : overviewTickPositions
+        .map((position) => points.find((point) => point.index === position)?.label)
+        .filter((label): label is string => Boolean(label));
 
   if (points.length === 0) {
     return (

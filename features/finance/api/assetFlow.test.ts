@@ -62,16 +62,36 @@ describe("scheduleDateInMonth", () => {
 });
 
 describe("toAssetFlowPoints", () => {
-  it("예측 시계열을 차트 좌표로 바꾼다", () => {
+  it("한 달 안이면 일자만 표기한다", () => {
     const points = toAssetFlowPoints([
       { date: "2026-08-01", balance: 1850000 },
       { date: "2026-08-25", balance: -168000 },
     ]);
 
     expect(points).toEqual([
-      { balance: 1850000, date: "2026-08-01", day: 1, label: "1일" },
-      { balance: -168000, date: "2026-08-25", day: 25, label: "25일" },
+      { balance: 1850000, date: "2026-08-01", index: 1, label: "1일" },
+      { balance: -168000, date: "2026-08-25", index: 2, label: "25일" },
     ]);
+  });
+
+  it("월을 넘으면 월.일 로 표기한다 — 8월 30일과 9월 30일이 축에서 겹치면 안 된다", () => {
+    // 예측은 오늘부터 30일을 보므로 월 경계를 넘는 것이 오히려 보통이다.
+    const points = toAssetFlowPoints([
+      { date: "2026-08-30", balance: 100 },
+      { date: "2026-09-30", balance: 200 },
+    ]);
+
+    expect(points.map((p) => p.label)).toEqual(["8.30", "9.30"]);
+  });
+
+  it("위치는 날짜가 아니라 시계열 순서다 — 구간 확대가 엉뚱한 날을 잡으면 안 된다", () => {
+    const points = toAssetFlowPoints([
+      { date: "2026-08-30", balance: 1 },
+      { date: "2026-08-31", balance: 2 },
+      { date: "2026-09-01", balance: 3 },
+    ]);
+
+    expect(points.map((p) => p.index)).toEqual([1, 2, 3]);
   });
 
   it("음수 잔액을 그대로 유지한다 — 차트가 알려야 할 바로 그 값이다", () => {
