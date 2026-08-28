@@ -29,6 +29,8 @@
   --background: #fcfcfc;
   --main-background: #f6f7f7;
   --effect-shadow-1: 0 0 8px rgb(234 234 234 / 80%);
+  /* 강조 카드용. shadow-1 보다 한 단계 위로, 금액이 놓이는 면을 띄운다. */
+  --effect-shadow-2: 0 2px 16px rgb(30 30 30 / 6%);
 }
 
 @theme inline {
@@ -59,6 +61,7 @@
   --color-main-background: var(--main-background);
 
   --shadow-1: var(--effect-shadow-1);
+  --shadow-2: var(--effect-shadow-2);
 
   --font-sans: var(--font-pretendard);
 }
@@ -129,6 +132,41 @@ body {
   font-weight: 400;
   line-height: 150%;
   letter-spacing: -0.24px;
+}
+
+/* 금액은 전부 고정폭 숫자로 렌더한다.
+   비례폭 숫자를 쓰면 값이 갱신될 때마다 자릿수에 따라 폭이 흔들리고,
+   목록에서 세로로 자릿수가 맞지 않아 금액 비교가 어려워진다. */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* 스켈레톤. 스피너 대신 최종 레이아웃과 같은 모양을 먼저 그려
+   데이터가 도착할 때 화면이 튀지 않게 한다. */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.animate-skeleton {
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-skeleton {
+    animation: none;
+    opacity: 0.7;
+  }
+
+  .animate-loading-spin {
+    animation-duration: 3s;
+  }
 }
 
 @keyframes loading-spin {
