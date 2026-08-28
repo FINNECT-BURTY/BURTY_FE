@@ -34,5 +34,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: 단위 테스트
+        # 금액·날짜 표기와 응답 파싱은 화면 전체가 의존하는 계약이다.
+        # 여기가 틀리면 모든 화면이 같은 방식으로 틀린다.
+        run: npm test
+
       - name: Build
         run: npm run build
