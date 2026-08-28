@@ -76,7 +76,14 @@ export function scheduleDateInMonth(
 export type AssetFlowPoint = Readonly<{
   balance: number;
   date: string;
-  day: number;
+  /**
+   * 시계열에서의 위치(1부터).
+   *
+   * <p>예전에는 날짜의 "일" 을 썼다. 예측은 오늘부터 30일을 보므로 월 경계를 넘는 일이
+   * 흔하고, 그러면 8월 30일과 9월 30일이 같은 값이 되어 구간 확대가 엉뚱한 날을 잡았다.
+   */
+  index: number;
+  /** 축 라벨. 월이 바뀌는 지점을 구분할 수 있어야 한다. */
   label: string;
 }>;
 
@@ -85,18 +92,25 @@ export function toAssetFlowPoints(
 ): readonly AssetFlowPoint[] {
   if (!dailyBalances?.length) return [];
 
-  return dailyBalances.map((point) => {
-    const day = dayOfMonthFromIso(point.date);
-    return {
-      balance: point.balance,
-      date: point.date,
-      day,
-      label: `${day}일`,
-    };
-  });
+  // 한 달 안에 머무르면 "25일" 로 충분하다. 월을 넘으면 "8.25" 로 적어야
+  // 8월 30일과 9월 30일이 축에서 겹치지 않는다.
+  const months = new Set(dailyBalances.map((point) => point.date.slice(0, 7)));
+  const spansMonths = months.size > 1;
+
+  return dailyBalances.map((point, position) => ({
+    balance: point.balance,
+    date: point.date,
+    index: position + 1,
+    label: spansMonths ? monthDayLabel(point.date) : `${dayOfMonth(point.date)}일`,
+  }));
 }
 
-function dayOfMonthFromIso(isoDate: string): number {
+function dayOfMonth(isoDate: string): number {
   const matched = /^\d{4}-\d{2}-(\d{2})/.exec(isoDate);
   return matched ? Number(matched[1]) : 0;
+}
+
+function monthDayLabel(isoDate: string): string {
+  const matched = /^\d{4}-(\d{2})-(\d{2})/.exec(isoDate);
+  return matched ? `${Number(matched[1])}.${Number(matched[2])}` : isoDate;
 }
