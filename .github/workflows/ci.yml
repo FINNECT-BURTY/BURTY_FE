@@ -1,0 +1,38 @@
+name: CI
+
+# PR 에서 lint 와 build 를 돌린다.
+#
+# AGENTS.md 는 변경 후 npm run lint 를 실행하라고 적고 있지만, 사람이 잊으면
+# 아무도 잡지 못한다. build 는 타입 검사까지 포함한다 — RouteContext 같은
+# Next 생성 타입은 next build 를 거쳐야 검증된다.
+
+on:
+  pull_request:
+    branches: [main, develop, release]
+  push:
+    branches: [main, develop]
+
+jobs:
+  lint-and-build:
+    name: Lint + Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+
+      # package-lock.json 을 그대로 쓴다. npm install 은 잠금 파일을 바꿀 수 있어
+      # CI 가 검증한 의존성과 실제 배포본이 어긋날 수 있다.
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
