@@ -11,21 +11,21 @@ import {
   YAxis,
 } from "recharts";
 
-export type AssetFlowPoint = Readonly<{
-  balance: number;
-  date: string;
-  day: number;
-}>;
+import type { AssetFlowPoint } from "@/features/finance/api/assetFlow";
+import { formatCompactWon } from "@/shared/ui/money";
 
 type AssetFlowChartProps = Readonly<{
   className?: string;
   interactive?: boolean;
+  points: readonly AssetFlowPoint[];
+  /** 예측상 잔액이 안전선 아래로 내려가는 날. 없으면 위험 표식을 그리지 않는다. */
+  riskDate?: string | null;
+  /** 사용자가 정한 안전잔액. 이 선 아래로 내려가는 순간이 이 차트의 핵심이다. */
+  safetyBalance?: number;
 }>;
 
 type AxisTickProps = Readonly<{
-  payload?: Readonly<{
-    value?: string;
-  }>;
+  payload?: Readonly<{ value?: string }>;
   x?: number;
   y?: number;
 }>;
@@ -39,43 +39,9 @@ type ChartRange = Readonly<{
 const chartRanges: readonly ChartRange[] = [
   { endDay: 10, label: "1~10일", startDay: 1 },
   { endDay: 20, label: "10~20일", startDay: 10 },
-  { endDay: 30, label: "20~30일", startDay: 20 },
+  { endDay: 31, label: "20~31일", startDay: 20 },
 ];
 
-const assetFlowData: readonly AssetFlowPoint[] = [
-  { balance: 30, date: "1일", day: 1 },
-  { balance: 28, date: "2일", day: 2 },
-  { balance: 27, date: "3일", day: 3 },
-  { balance: 25, date: "4일", day: 4 },
-  { balance: 24, date: "5일", day: 5 },
-  { balance: 26, date: "6일", day: 6 },
-  { balance: 28, date: "7일", day: 7 },
-  { balance: 31, date: "8일", day: 8 },
-  { balance: 33, date: "9일", day: 9 },
-  { balance: 35, date: "10일", day: 10 },
-  { balance: 37, date: "11일", day: 11 },
-  { balance: 39, date: "12일", day: 12 },
-  { balance: 40, date: "13일", day: 13 },
-  { balance: 42, date: "14일", day: 14 },
-  { balance: 43, date: "15일", day: 15 },
-  { balance: 40, date: "16일", day: 16 },
-  { balance: 37, date: "17일", day: 17 },
-  { balance: 35, date: "18일", day: 18 },
-  { balance: 33, date: "19일", day: 19 },
-  { balance: 31, date: "20일", day: 20 },
-  { balance: 28, date: "21일", day: 21 },
-  { balance: 24, date: "22일", day: 22 },
-  { balance: 20, date: "23일", day: 23 },
-  { balance: 16, date: "24일", day: 24 },
-  { balance: 13, date: "25일", day: 25 },
-  { balance: 20, date: "26일", day: 26 },
-  { balance: 27, date: "27일", day: 27 },
-  { balance: 35, date: "28일", day: 28 },
-  { balance: 43, date: "29일", day: 29 },
-  { balance: 50, date: "30일", day: 30 },
-];
-
-const riskPoint = assetFlowData.find((point) => point.date === "25일");
 const overviewTickDays = [1, 10, 20, 30] as const;
 
 function AxisTick({
@@ -83,15 +49,15 @@ function AxisTick({
   x = 0,
   y = 0,
   compact = false,
-  visibleRiskDate,
-}: AxisTickProps & Readonly<{ compact?: boolean; visibleRiskDate?: string }>) {
+  visibleRiskLabel,
+}: AxisTickProps & Readonly<{ compact?: boolean; visibleRiskLabel?: string }>) {
   const value = payload?.value ?? "";
-  const isRiskDate = value === visibleRiskDate;
+  const isRiskDate = value === visibleRiskLabel;
   const label = compact ? value.replace("일", "") : value;
 
   return (
     <text
-      fill={isRiskDate ? "var(--grayscale-1000)" : "var(--grayscale-700)"}
+      fill={isRiskDate ? "var(--red)" : "var(--grayscale-700)"}
       fontSize="11"
       fontWeight={isRiskDate ? 600 : 400}
       textAnchor="middle"
@@ -103,22 +69,65 @@ function AxisTick({
   );
 }
 
+/**
+ * 세로축 범위.
+ *
+ * <p>데이터 최소·최대에 여백을 준다. 값에 딱 맞추면 선이 위아래 테두리에 닿아
+ * 변화 폭을 읽기 어렵다.
+ *
+ * <p>0 과 안전선은 범위 안에 반드시 포함한다. 잔액이 0 아래로 내려가는데 축이
+ * 그 구간을 잘라내면, 이 차트가 알려야 할 바로 그 사실이 보이지 않는다.
+ */
+function computeDomain(
+  values: readonly number[],
+  safetyBalance: number | undefined,
+): readonly [number, number] {
+  if (values.length === 0) return [0, 1];
+
+  const candidates = [...values, 0];
+  if (safetyBalance !== undefined) candidates.push(safetyBalance);
+
+  const min = Math.min(...candidates);
+  const max = Math.max(...candidates);
+  const padding = Math.max((max - min) * 0.15, 1);
+
+  return [min - padding, max + padding];
+}
+
+/**
+ * 세로축에서 0원이 놓이는 위치(0~1).
+ *
+ * <p>이 값으로 그라디언트를 갈라 0원 아래 구간을 붉게 칠한다. 잔액이 마이너스로
+ * 내려가는 지점은 이 차트가 알려야 할 가장 중요한 사실인데, 한 가지 색으로 칠하면
+ * 축 눈금 없이는 어디서부터가 마이너스인지 알 수 없다.
+ */
+function zeroOffsetRatio([min, max]: readonly [number, number]): number | null {
+  if (min >= 0 || max <= 0) return null;
+  return (max - 0) / (max - min);
+}
+
 export function AssetFlowChart({
   className = "",
   interactive = false,
+  points,
+  riskDate,
+  safetyBalance,
 }: AssetFlowChartProps) {
   const [selectedRange, setSelectedRange] = useState<ChartRange | null>(null);
   const [hoveredRange, setHoveredRange] = useState<ChartRange | null>(null);
-  const isExpanded = selectedRange !== null;
-  const visibleData = useMemo(() => {
-    if (!selectedRange) return assetFlowData;
 
-    return assetFlowData.filter(
+  const isExpanded = selectedRange !== null;
+
+  const visibleData = useMemo(() => {
+    if (!selectedRange) return points;
+    return points.filter(
       (point) =>
         point.day >= selectedRange.startDay && point.day <= selectedRange.endDay,
     );
-  }, [selectedRange]);
+  }, [points, selectedRange]);
+
   const highlightedRange = selectedRange ? null : hoveredRange;
+
   const chartData = useMemo(
     () =>
       visibleData.map((point) => ({
@@ -132,25 +141,45 @@ export function AssetFlowChart({
       })),
     [highlightedRange, visibleData],
   );
-  const visibleRiskPoint = visibleData.find(
-    (point) => point.date === riskPoint?.date,
+
+  const riskPoint = riskDate
+    ? points.find((point) => point.date === riskDate)
+    : undefined;
+  const visibleRiskPoint = riskPoint
+    ? visibleData.find((point) => point.date === riskPoint.date)
+    : undefined;
+
+  const domain = useMemo(
+    () => computeDomain(visibleData.map((point) => point.balance), safetyBalance),
+    [safetyBalance, visibleData],
   );
-  const riskLineSegment = visibleRiskPoint
-    ? ([
-        { x: visibleRiskPoint.date, y: visibleRiskPoint.balance + 25 },
-        { x: visibleRiskPoint.date, y: visibleRiskPoint.balance + 2 },
-      ] as const)
-    : null;
+
+  const zeroOffset = zeroOffsetRatio(domain);
+
   const xAxisTicks = selectedRange
-    ? visibleData.map((point) => point.date)
-    : overviewTickDays.map((day) => `${day}일`);
+    ? visibleData.map((point) => point.label)
+    : overviewTickDays
+        .map((day) => `${day}일`)
+        .filter((label) => visibleData.some((point) => point.label === label));
+
+  if (points.length === 0) {
+    return (
+      <div
+        className={`${className} flex h-[148px] items-center justify-center rounded-xl bg-grayscale-100/50`}
+      >
+        <p className="text-body-md text-grayscale-600">
+          예측할 잔액 정보가 아직 없어요
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
       aria-label={
         selectedRange
-          ? `${selectedRange.label} 일별 예상 자산 흐름`
-          : "1일부터 30일까지의 예상 자산 흐름"
+          ? `${selectedRange.label} 일별 예상 잔액`
+          : "이번 달 일별 예상 잔액 흐름"
       }
       className={`${className} w-full overflow-hidden`}
     >
@@ -165,6 +194,7 @@ export function AssetFlowChart({
           </button>
         </div>
       ) : null}
+
       <div
         className={`relative ${
           interactive ? (isExpanded ? "h-[220px]" : "h-[148px]") : "h-full"
@@ -188,34 +218,90 @@ export function AssetFlowChart({
                   stopColor="var(--yellow-400)"
                   stopOpacity={0.78}
                 />
-                <stop
-                  offset="58%"
-                  stopColor="var(--yellow-300)"
-                  stopOpacity={0.56}
-                />
-                <stop
-                  offset="100%"
-                  stopColor="var(--yellow-200)"
-                  stopOpacity={0.36}
-                />
+                {zeroOffset === null ? (
+                  <>
+                    <stop
+                      offset="58%"
+                      stopColor="var(--yellow-300)"
+                      stopOpacity={0.56}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--yellow-200)"
+                      stopOpacity={0.36}
+                    />
+                  </>
+                ) : (
+                  <>
+                    {/* 0원 지점에서 색을 끊는다. 아래는 마이너스 구간이다. */}
+                    <stop
+                      offset={`${zeroOffset * 100}%`}
+                      stopColor="var(--yellow-200)"
+                      stopOpacity={0.42}
+                    />
+                    <stop
+                      offset={`${zeroOffset * 100}%`}
+                      stopColor="var(--red)"
+                      stopOpacity={0.22}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--red)"
+                      stopOpacity={0.32}
+                    />
+                  </>
+                )}
               </linearGradient>
             </defs>
 
             <XAxis
               axisLine={false}
-              dataKey="date"
+              dataKey="label"
               interval={0}
               padding={{ left: 24, right: 24 }}
               tick={
                 <AxisTick
                   compact={selectedRange !== null}
-                  visibleRiskDate={visibleRiskPoint?.date}
+                  visibleRiskLabel={visibleRiskPoint?.label}
                 />
               }
               tickLine={false}
               ticks={xAxisTicks}
             />
-            <YAxis domain={[0, 56]} hide />
+            <YAxis domain={domain} hide />
+
+            {/* 0원 — 잔액이 바닥나는 선. 안전선보다 먼저 그려 뒤로 깔리게 한다. */}
+            {zeroOffset !== null ? (
+              <ReferenceLine
+                ifOverflow="visible"
+                label={{
+                  fill: "var(--red)",
+                  fontSize: 10,
+                  // 안전선 라벨과 같은 쪽에 두면 두 선이 가까울 때 글자가 겹친다.
+                  position: "insideBottomRight",
+                  value: "0원",
+                }}
+                stroke="var(--red)"
+                strokeOpacity={0.45}
+                y={0}
+              />
+            ) : null}
+
+            {/* 안전잔액 — 이 선 아래로 내려가면 위험이다. 값을 함께 적어야 선의 뜻이 산다. */}
+            {safetyBalance !== undefined ? (
+              <ReferenceLine
+                ifOverflow="visible"
+                label={{
+                  fill: "var(--grayscale-600)",
+                  fontSize: 10,
+                  position: "insideTopLeft",
+                  value: `안전 ${formatCompactWon(safetyBalance)}`,
+                }}
+                stroke="var(--grayscale-300)"
+                strokeDasharray="3 3"
+                y={safetyBalance}
+              />
+            ) : null}
 
             <Area
               activeDot={false}
@@ -229,6 +315,7 @@ export function AssetFlowChart({
               strokeWidth={2}
               type="monotone"
             />
+
             {highlightedRange ? (
               <Area
                 activeDot={false}
@@ -245,40 +332,23 @@ export function AssetFlowChart({
                 type="monotone"
               />
             ) : null}
-            {visibleRiskPoint ? (
-              <>
-                <ReferenceLine
-                  ifOverflow="visible"
-                  segment={riskLineSegment ?? undefined}
-                  stroke="var(--red)"
-                  strokeDasharray="4 1"
-                  strokeLinecap="round"
-                />
-                <ReferenceDot
-                  fill="var(--red)"
-                  ifOverflow="visible"
-                  r={4}
-                  stroke="var(--background)"
-                  strokeWidth={2}
-                  x={visibleRiskPoint.date}
-                  y={visibleRiskPoint.balance}
-                />
-              </>
-            ) : null}
 
             {visibleRiskPoint ? (
-              <text
+              // 점만 찍는다. 카드 상단에 "N일에 얼마 부족" 이 이미 적혀 있어
+              // 차트 안에 같은 말을 또 넣으면 선과 겹치기만 하고 알려주는 것이 없다.
+              <ReferenceDot
                 fill="var(--red)"
-                fontSize="11"
-                textAnchor="middle"
-                x={selectedRange ? "50%" : "78%"}
-                y={selectedRange ? "62" : "40"}
-              >
-                위험 예상 발생
-              </text>
+                ifOverflow="visible"
+                r={4}
+                stroke="var(--background)"
+                strokeWidth={2}
+                x={visibleRiskPoint.label}
+                y={visibleRiskPoint.balance}
+              />
             ) : null}
           </AreaChart>
         </ResponsiveContainer>
+
         {interactive && !selectedRange ? (
           <div className="absolute inset-x-0 bottom-[18px] top-7 flex">
             {chartRanges.map((range) => (
