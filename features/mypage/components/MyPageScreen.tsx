@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -20,17 +21,22 @@ type MyPageMenuSection = Readonly<{
 }>;
 
 type MyPageMenuItem = Readonly<{
+  /** 이동할 경로. onClick 과 둘 중 하나만 쓴다. */
+  href?: string;
   label: string;
   onClick?: () => void;
 }>;
 
+/**
+ * 메뉴 한 줄.
+ *
+ * <p>이동은 링크로, 동작은 버튼으로 낸다. 예전에는 전부 버튼이었고 그중 일곱 개가
+ * 핸들러 없이 놓여 있었다 — 눌러도 아무 일이 없는 버튼은 스크린리더에서 조작 가능한
+ * 요소로 읽히고, 사용자에게는 앱이 고장난 것처럼 보인다.
+ */
 function MenuRow({ item }: Readonly<{ item: MyPageMenuItem }>) {
-  return (
-    <button
-      className="flex h-8 w-full items-center justify-between text-left"
-      onClick={item.onClick}
-      type="button"
-    >
+  const content = (
+    <>
       <span className="text-body-md text-grayscale-1000">{item.label}</span>
       <Image
         alt=""
@@ -39,6 +45,22 @@ function MenuRow({ item }: Readonly<{ item: MyPageMenuItem }>) {
         src="/icons/finance/right-arrow-gray-800.svg"
         width={10}
       />
+    </>
+  );
+
+  const className = "flex h-11 w-full items-center justify-between text-left";
+
+  if (item.href) {
+    return (
+      <Link className={className} href={item.href}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button className={className} onClick={item.onClick} type="button">
+      {content}
     </button>
   );
 }
@@ -92,22 +114,23 @@ export function MyPageScreen() {
     }
   };
 
+  // 실제로 동작하는 것만 남긴다. 백엔드가 없는 항목(알림 설정, 앱 설정)은
+  // 자리만 차지하고 눌러도 아무 일이 없었으므로 뺐다.
   const menuSections: readonly MyPageMenuSection[] = [
     {
-      items: [{ label: "금융 연동 관리" }, { label: "고정 지출 관리" }],
+      items: [
+        { href: "/mypage/institutions", label: "금융 연동 관리" },
+        { href: "/mypage/schedules", label: "고정 지출 관리" },
+      ],
       title: "계정 및 데이터",
     },
     {
-      items: [{ label: "알림 설정" }, { label: "위험 알림 ON/OFF" }],
-      title: "알림",
-    },
-    {
-      items: [{ label: "인증 설정" }, { label: "비밀번호 / 생체 인증" }],
+      items: [{ href: "/mypage/security", label: "기기 및 로그인 관리" }],
       title: "보안",
     },
     {
-      items: [{ label: "앱 설정" }, { label: "로그아웃", onClick: handleOpenLogoutModal }],
-      title: "앱 설정",
+      items: [{ label: "로그아웃", onClick: handleOpenLogoutModal }],
+      title: "계정",
     },
   ];
 

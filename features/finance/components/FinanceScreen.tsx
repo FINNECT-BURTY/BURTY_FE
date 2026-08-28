@@ -1,85 +1,65 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
+import {
+  type CashflowSchedule,
+  fetchAssetFlow,
+  scheduleDateInMonth,
+  scheduleDirection,
+  signedScheduleAmount,
+} from "@/features/finance/api/assetFlow";
 import { AssetFlowCard } from "@/features/finance/components/AssetFlowCard";
+import { useBackendQuery } from "@/shared/hooks/useBackendQuery";
 import { BottomNavigation } from "@/shared/layout/BottomNavigation";
 import { MainHeader } from "@/shared/layout/MainHeader";
+import { formatMonthDay, formatSignedWon } from "@/shared/ui/money";
+import { Skeleton } from "@/shared/ui/Skeleton";
+import { EmptyState, StaleNotice } from "@/shared/ui/StateMessage";
 
-type ScheduleType = "expense" | "income";
-type ScheduleFilter = "all" | ScheduleType;
-
-type ScheduleItem = Readonly<{
-  id: string;
-  amount: number;
-  date: string;
-  isRisk?: boolean;
-  title: string;
-  type: ScheduleType;
-}>;
+type ScheduleFilter = "all" | "in" | "out";
 
 const filterItems: readonly Readonly<{
   label: string;
   value: ScheduleFilter;
 }>[] = [
   { label: "전체", value: "all" },
-  { label: "수입", value: "income" },
-  { label: "지출", value: "expense" },
+  { label: "수입", value: "in" },
+  { label: "지출", value: "out" },
 ];
-
-const scheduleItems: readonly ScheduleItem[] = [
-  {
-    id: "payday-1",
-    amount: 250000,
-    date: "3.7",
-    title: "급여일",
-    type: "income",
-  },
-  {
-    id: "card",
-    amount: -250000,
-    date: "3.7",
-    title: "카드값",
-    type: "expense",
-  },
-  {
-    id: "rent",
-    amount: -250000,
-    date: "3.16",
-    isRisk: true,
-    title: "월세",
-    type: "expense",
-  },
-  {
-    id: "interest",
-    amount: 300,
-    date: "3.18",
-    title: "이자",
-    type: "income",
-  },
-  {
-    id: "payday-2",
-    amount: 250000,
-    date: "3.7",
-    title: "급여일",
-    type: "income",
-  },
-];
-
-function formatAmount(value: number) {
-  const formatted = Math.abs(value).toLocaleString("ko-KR");
-  return `${value > 0 ? "+" : "-"}${formatted}원`;
-}
-
-function getVisibleSchedules(filter: ScheduleFilter) {
-  if (filter === "all") return scheduleItems;
-  return scheduleItems.filter((item) => item.type === filter);
-}
 
 export function FinanceScreen() {
   const [selectedFilter, setSelectedFilter] = useState<ScheduleFilter>("all");
-  const visibleSchedules = getVisibleSchedules(selectedFilter);
+
+  const fetcher = useCallback(() => fetchAssetFlow(), []);
+  const { data, error, isInitialLoading, refetch } = useBackendQuery(fetcher);
+
+  const forecast = data?.forecast ?? null;
+  const riskDate = forecast?.riskDate ?? null;
+
+  // 일정은 dayOfMonth 만 오므로 화면에서 이번 달 날짜로 만들고 정렬한다.
+  // 정렬하지 않으면 등록 순서대로 나와 "다음에 무엇이 오는가" 를 읽을 수 없다.
+  const schedules = useMemo(() => {
+    const items = data?.schedules ?? [];
+    return items
+      .filter((item) => item.active)
+      .map((item) => ({
+        item,
+        date: scheduleDateInMonth(item.dayOfMonth),
+      }))
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+  }, [data?.schedules]);
+
+  const visibleSchedules = useMemo(
+    () =>
+      selectedFilter === "all"
+        ? schedules
+        : schedules.filter(
+            ({ item }) => scheduleDirection(item) === selectedFilter,
+          ),
+    [schedules, selectedFilter],
+  );
 
   return (
     <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
@@ -89,13 +69,14 @@ export function FinanceScreen() {
         <h1 className="text-title-md text-grayscale-1000">자산 흐름</h1>
 
         <div className="mt-2">
-          <AssetFlowCard />
+          <AssetFlowCard forecast={forecast} isLoading={isInitialLoading} />
         </div>
 
         <section className="mt-6">
           <div className="flex items-center gap-1.5">
             <Image
               alt=""
+              aria-hidden="true"
               height={20}
               src="/icons/main/money.svg"
               width={20}
@@ -105,13 +86,14 @@ export function FinanceScreen() {
             </h2>
           </div>
 
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex gap-2" role="group">
             {filterItems.map((item) => {
-              const isSelected = item.value  === selectedFilter;
+              const isSelected = item.value === selectedFilter;
 
               return (
                 <button
-                  className={`text-body-md h-9 rounded-2xl border px-4 ${
+                  aria-pressed={isSelected}
+                  className={`text-body-md h-9 rounded-2xl border px-4 transition-colors ${
                     isSelected
                       ? "border-grayscale-1000 bg-grayscale-1000 text-background"
                       : "border-grayscale-200 bg-background text-grayscale-800"
@@ -126,33 +108,119 @@ export function FinanceScreen() {
             })}
           </div>
 
-          <div className="mt-4 space-y-4">
-            {visibleSchedules.map((item) => (
-              <article
-                className="flex min-h-[72px] items-center justify-between bg-background px-5 py-5 rounded-2xl border border-grayscale-100"
-                key={item.id}
-              >
-                <div className="min-w-0">
-                  {item.isRisk ? (
-                    <p className="text-caption mb-2 text-red">위험 발생 예정</p>
-                  ) : null}
-                  <h3 className="text-title-xs text-grayscale-1000">
-                    {item.title}
-                  </h3>
-                  <p className="text-caption text-grayscale-900">
-                    {item.date}
-                  </p>
+          {isInitialLoading ? (
+            <div className="mt-4 space-y-4">
+              {Array.from({ length: 3 }, (_, index) => (
+                <div
+                  className="flex min-h-[72px] items-center justify-between rounded-2xl border border-grayscale-100 bg-background px-5 py-5"
+                  key={index}
+                >
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-12" />
+                  </div>
+                  <Skeleton className="h-4 w-20" />
                 </div>
-                <p className="text-body-md shrink-0 text-grayscale-1000">
-                  {formatAmount(item.amount)}
-                </p>
-              </article>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : visibleSchedules.length === 0 ? (
+            <div className="mt-4 rounded-2xl border border-grayscale-100 bg-background">
+              <EmptyState
+                description={
+                  schedules.length === 0
+                    ? "급여일이나 고정 지출을 등록하면 흐름을 더 정확히 예측해요"
+                    : undefined
+                }
+                title={
+                  schedules.length === 0
+                    ? "등록된 일정이 없어요"
+                    : "해당하는 일정이 없어요"
+                }
+              />
+            </div>
+          ) : (
+            <ul className="mt-4 space-y-4">
+              {visibleSchedules.map(({ date, item }) => (
+                <li key={item.scheduleId}>
+                  <ScheduleRow
+                    date={date}
+                    isRisk={isRiskSchedule(item, date, riskDate)}
+                    schedule={item}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
+
+        {error ? (
+          <StaleNotice className="mt-6 justify-center" onRetry={refetch} />
+        ) : null}
       </section>
 
       <BottomNavigation />
     </main>
   );
+}
+
+function ScheduleRow({
+  date,
+  isRisk,
+  schedule,
+}: Readonly<{
+  date: Date;
+  isRisk: boolean;
+  schedule: CashflowSchedule;
+}>) {
+  const direction = scheduleDirection(schedule);
+  const amount = signedScheduleAmount(schedule);
+
+  return (
+    <article
+      className={`flex min-h-[72px] items-center justify-between gap-3 rounded-2xl border bg-background px-5 py-5 ${
+        isRisk ? "border-red/30" : "border-grayscale-100"
+      }`}
+    >
+      <div className="min-w-0">
+        {isRisk ? (
+          <p className="text-caption mb-2 text-red">위험 발생 예정</p>
+        ) : null}
+        <h3 className="text-title-xs truncate text-grayscale-1000">
+          {schedule.label}
+        </h3>
+        <p className="text-caption text-grayscale-900">
+          {formatMonthDay(toIsoDate(date))}
+        </p>
+      </div>
+
+      {/*
+        수입만 초록으로 강조한다. 지출을 빨강으로 칠하면 정상적인 월세·카드값이
+        전부 경고로 읽혀, 정작 진짜 위험 표시가 묻힌다.
+      */}
+      <p
+        className={`text-body-md tabular-nums shrink-0 ${
+          direction === "in" ? "text-green" : "text-grayscale-1000"
+        }`}
+      >
+        {formatSignedWon(amount)}
+      </p>
+    </article>
+  );
+}
+
+/** 예측상 위험한 날에 잡힌 지출이면 목록에서도 표시한다. */
+function isRiskSchedule(
+  schedule: CashflowSchedule,
+  date: Date,
+  riskDate: string | null,
+): boolean {
+  if (!riskDate) return false;
+  if (scheduleDirection(schedule) !== "out") return false;
+  return toIsoDate(date) === riskDate;
+}
+
+function toIsoDate(date: Date): string {
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
 }
