@@ -14,6 +14,9 @@
 
   --espresso: #301c1b;
 
+  /* AssetFlowChart 의 구간 강조 선이 참조한다. 정의가 없어 stroke 가 무효값이 되면서
+     강조 영역의 외곽선이 렌더되지 않고 있었다. */
+  --yellow-500: #d7c05c;
   --yellow-400: #FFEB60;
   --yellow-300: #FFF294;
   --yellow-200: #FFF8C7;
@@ -42,6 +45,7 @@
 
   --color-espresso: var(--espresso);
 
+  --color-yellow-500: var(--yellow-500);
   --color-yellow-400: var(--yellow-400);
   --color-yellow-300: var(--yellow-300);
   --color-yellow-200: var(--yellow-200);
