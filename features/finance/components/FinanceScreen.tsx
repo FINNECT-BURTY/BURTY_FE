@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 
 import {
@@ -71,6 +72,30 @@ export function FinanceScreen() {
         <div className="mt-2">
           <AssetFlowCard forecast={forecast} isLoading={isInitialLoading} />
         </div>
+
+        {/* 이체 진입점. 자산을 보다가 바로 보낼 수 있어야 한다. */}
+        <Link
+          className="mt-3 flex min-h-14 items-center justify-between rounded-2xl border border-grayscale-100 bg-background px-5"
+          href="/transfer"
+        >
+          <span className="flex items-center gap-1.5">
+            <Image
+              alt=""
+              aria-hidden="true"
+              height={16}
+              src="/icons/main/money.svg"
+              width={16}
+            />
+            <span className="text-title-sm text-grayscale-1000">이체하기</span>
+          </span>
+          <Image
+            alt=""
+            aria-hidden="true"
+            height={17}
+            src="/icons/finance/right-arrow-gray-800.svg"
+            width={12}
+          />
+        </Link>
 
         <section className="mt-6">
           <div className="flex items-center gap-1.5">
