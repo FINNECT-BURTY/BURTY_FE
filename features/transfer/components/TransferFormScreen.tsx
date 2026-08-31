@@ -336,7 +336,7 @@ function Field({
 }
 
 const inputClassName =
-  "text-body-lg h-13 w-full rounded-2xl border border-grayscale-200 bg-background px-4 text-grayscale-1000 placeholder:text-grayscale-400 focus:border-grayscale-1000 focus:outline-none";
+  "text-body-lg h-13 w-full rounded-2xl border border-grayscale-200 bg-background px-4 text-grayscale-1000 placeholder:text-grayscale-400 focus:border-grayscale-1000";
 
 /** 입력에서 숫자만 남긴다. 쉼표를 지우지 않으면 1,000 이 NaN 이 된다. */
 function parseAmount(text: string): number {
