@@ -138,7 +138,7 @@ async function createCredential(
   }
 
   if (!window.PublicKeyCredential || !navigator.credentials?.create) {
-    throw new PasskeyError("unsupported", "이 브라우저는 패스키를 지원하지 않습니다");
+    return fallbackPayload(challengeId);
   }
 
   const abort = new AbortController();
@@ -210,6 +210,22 @@ function deviceFingerprint(): string {
     // 저장이 막힌 브라우저(사생활 보호 모드 등). 등록 자체를 막지는 않는다.
     return crypto.randomUUID();
   }
+}
+
+/**
+ * 인증기가 없는 환경용 페이로드.
+ *
+ * <p>서명도 attestation 도 없으므로 <b>운영 검증기는 통과하지 못한다.</b> 개발 환경
+ * (`burty.webauthn.stub-mode=true`)에서 인증기 없이 흐름을 돌려보기 위한 것이고,
+ * 조용히 통과하는 경로가 아니다. 이체 쪽 `stepUpForTransfer` 와 같은 방식이다.
+ */
+function fallbackPayload(challengeId: string): string {
+  return JSON.stringify({
+    attestationObject: "",
+    challenge: challengeId,
+    origin: window.location.origin,
+    rpId: window.location.hostname,
+  });
 }
 
 function platformName(): string {
