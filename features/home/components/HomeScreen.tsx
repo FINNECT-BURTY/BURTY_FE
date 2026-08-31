@@ -37,18 +37,17 @@ export function HomeScreen() {
   const riskLevel = normalizeRiskLevel(risk?.level);
   const hasRisk = riskLevel !== "GREEN";
 
-  // 안전잔액 대비 얼마나 여유가 있는지. 남은 금액이 아니라 "비율" 이라야
-  // 금액 규모가 다른 사용자끼리도 같은 의미로 읽힌다.
-  const spendableRatio =
-    spendable && spendable.usable > 0 && forecast
-      ? Math.min(
-          Math.max(
-            spendable.usable /
-              Math.max(forecast.openingBalance, spendable.usable),
-            0,
-          ),
-          1,
-        )
+  /**
+   * 현재 잔액 중 안전잔액을 뺀 여유의 비율.
+   *
+   * <p>이 막대는 "오늘 얼마나 썼는가" 가 <b>아니다.</b> 백엔드가 오늘 지출을 주지 않으므로
+   * 그 값을 그릴 수 없다. 예전에는 "오늘 쓸 수 있는 금액" 바로 아래에 라벨 없이 두어
+   * 오늘 예산 소진율처럼 읽혔다 — 막대가 라벨과 다른 것을 나타내고 있었다.
+   * 지금은 무엇을 나타내는지 옆에 적는다.
+   */
+  const headroomRatio =
+    spendable && forecast && forecast.openingBalance > 0
+      ? Math.min(Math.max(spendable.usable / forecast.openingBalance, 0), 1)
       : 0;
 
   const handleResolveRisk = () => {
@@ -119,14 +118,24 @@ export function HomeScreen() {
                   안전잔액을 뺀 {formatWon(spendable.usable)}을 남은{" "}
                   {spendable.remainingDays}일로 나눈 금액이에요
                 </p>
-                <div
-                  aria-hidden="true"
-                  className="mt-3 h-2 overflow-hidden rounded-full bg-grayscale-100"
-                >
+                <div className="mt-4">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-caption text-grayscale-700">
+                      잔액 중 쓸 수 있는 비율
+                    </span>
+                    <span className="text-caption tabular-nums text-grayscale-700">
+                      {Math.round(headroomRatio * 100)}%
+                    </span>
+                  </div>
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-yellow-200 to-yellow-400 transition-[width] duration-500"
-                    style={{ width: `${spendableRatio * 100}%` }}
-                  />
+                    aria-hidden="true"
+                    className="mt-1.5 h-2 overflow-hidden rounded-full bg-grayscale-100"
+                  >
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-yellow-200 to-yellow-400 transition-[width] duration-500"
+                      style={{ width: `${headroomRatio * 100}%` }}
+                    />
+                  </div>
                 </div>
               </>
             ) : (

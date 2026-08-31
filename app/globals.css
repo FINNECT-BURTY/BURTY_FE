@@ -134,6 +134,25 @@ body {
   letter-spacing: -0.24px;
 }
 
+/* 키보드 포커스 표시.
+   여러 입력에 outline-none 이 걸려 있는데 대체 표시가 없어, 키보드·스위치 사용자가
+   지금 어디에 있는지 알 수 없었다. 로그인 화면의 비밀번호 입력까지 그랬다.
+   개별 컴포넌트가 지우더라도 여기서 다시 세운다 (WCAG 2.4.7).
+
+   :focus-visible 만 쓴다. :focus 로 걸면 마우스 클릭에도 테두리가 남아
+   디자인이 흐트러진다. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--grayscale-1000);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 노란 배경 위에서는 검정 테두리가 묻힌다. 대비를 위해 색을 바꾼다. */
+.bg-yellow-400:focus-visible,
+.bg-yellow-300:focus-visible {
+  outline-color: var(--espresso);
+}
+
 /* 금액은 전부 고정폭 숫자로 렌더한다.
    비례폭 숫자를 쓰면 값이 갱신될 때마다 자릿수에 따라 폭이 흔들리고,
    목록에서 세로로 자릿수가 맞지 않아 금액 비교가 어려워진다. */

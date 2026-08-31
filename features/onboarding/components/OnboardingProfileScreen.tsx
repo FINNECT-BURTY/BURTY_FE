@@ -148,7 +148,7 @@ export function OnboardingProfileScreen({
           <label className="flex flex-col gap-2">
             <span className="text-title-sm text-grayscale-1000">이름</span>
             <input
-              className="text-body-lg h-13 rounded-2xl border border-grayscale-200 bg-white px-4 text-grayscale-1000 outline-none focus:border-grayscale-700"
+              className="text-body-lg h-13 rounded-2xl border border-grayscale-200 bg-white px-4 text-grayscale-1000 focus:border-grayscale-700"
               maxLength={30}
               onChange={(event) => setName(event.target.value)}
               placeholder="본인 실명을 입력해 주세요."
@@ -159,7 +159,7 @@ export function OnboardingProfileScreen({
           <label className="flex flex-col gap-2">
             <span className="text-title-sm text-grayscale-1000">휴대폰 번호</span>
             <input
-              className="text-body-lg h-13 rounded-2xl border border-grayscale-200 bg-white px-4 text-grayscale-1000 outline-none focus:border-grayscale-700"
+              className="text-body-lg h-13 rounded-2xl border border-grayscale-200 bg-white px-4 text-grayscale-1000 focus:border-grayscale-700"
               inputMode="tel"
               maxLength={13}
               onChange={(event) => setPhone(event.target.value)}

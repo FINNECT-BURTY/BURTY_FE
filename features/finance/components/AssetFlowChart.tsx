@@ -361,7 +361,7 @@ export function AssetFlowChart({
             {chartRanges.map((range) => (
               <button
                 aria-label={`${range.label} 상세 차트 보기`}
-                className="h-full flex-1 cursor-pointer bg-transparent focus-visible:outline-none"
+                className="h-full flex-1 cursor-pointer bg-transparent"
                 key={range.label}
                 onBlur={() => setHoveredRange(null)}
                 onClick={() => setSelectedRange(range)}

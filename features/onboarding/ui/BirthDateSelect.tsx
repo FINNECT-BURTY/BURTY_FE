@@ -10,7 +10,7 @@ type BirthDateSelectProps = Readonly<{
 }>;
 
 const selectClassName =
-  "text-body-md h-13 w-full appearance-none rounded-2xl border border-grayscale-200 bg-background px-3 pr-8 text-grayscale-1000 outline-none";
+  "text-body-md h-13 w-full appearance-none rounded-2xl border border-grayscale-200 bg-background px-3 pr-8 text-grayscale-1000";
 
 export function BirthDateSelect({
   ariaLabel,

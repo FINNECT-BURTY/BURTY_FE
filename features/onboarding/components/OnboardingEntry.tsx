@@ -17,7 +17,7 @@ const inactiveAuthLinks = [
 ] as const;
 
 const inputClassName =
-  "text-body-md h-13 w-full rounded-2xl border border-grayscale-200 bg-background px-5 py-4 text-grayscale-1000 outline-none placeholder:text-grayscale-800";
+  "text-body-md h-13 w-full rounded-2xl border border-grayscale-200 bg-background px-5 py-4 text-grayscale-1000 placeholder:text-grayscale-800";
 
 function CheckIcon({ checked }: Readonly<{ checked: boolean }>) {
   return (
