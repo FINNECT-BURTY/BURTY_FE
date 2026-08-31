@@ -119,14 +119,22 @@ export function MyPageScreen() {
   const menuSections: readonly MyPageMenuSection[] = [
     {
       items: [
+        { href: "/transactions", label: "거래내역" },
         { href: "/mypage/institutions", label: "금융 연동 관리" },
         { href: "/mypage/schedules", label: "고정 지출 관리" },
       ],
       title: "계정 및 데이터",
     },
     {
-      items: [{ href: "/mypage/security", label: "기기 및 로그인 관리" }],
+      items: [
+        { href: "/mypage/security", label: "기기 및 로그인 관리" },
+        { href: "/mypage/security/passkey", label: "패스키 등록" },
+      ],
       title: "보안",
+    },
+    {
+      items: [{ href: "/family", label: "가족 보호 및 승인" }],
+      title: "가족",
     },
     {
       items: [{ label: "로그아웃", onClick: handleOpenLogoutModal }],
