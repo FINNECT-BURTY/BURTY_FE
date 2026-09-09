@@ -97,6 +97,30 @@ export function FinanceScreen() {
           />
         </Link>
 
+        {/* 쓴 돈을 봤으면 다음 질문은 "이번 달 얼마까지 써도 되나" 다. */}
+        <Link
+          className="mt-2 flex min-h-14 items-center justify-between rounded-2xl border border-grayscale-100 bg-background px-5"
+          href="/finance/budget"
+        >
+          <span className="flex items-center gap-1.5">
+            <Image
+              alt=""
+              aria-hidden="true"
+              height={16}
+              src="/icons/main/money.svg"
+              width={16}
+            />
+            <span className="text-title-sm text-grayscale-1000">예산</span>
+          </span>
+          <Image
+            alt=""
+            aria-hidden="true"
+            height={17}
+            src="/icons/finance/right-arrow-gray-800.svg"
+            width={12}
+          />
+        </Link>
+
         {/* 자산 흐름이 이상해 보이면 바로 그 근거인 개별 거래를 확인할 수 있어야 한다. */}
         <Link
           className="mt-2 flex min-h-14 items-center justify-between rounded-2xl border border-grayscale-100 bg-background px-5"
