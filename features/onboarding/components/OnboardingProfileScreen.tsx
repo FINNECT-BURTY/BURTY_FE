@@ -80,8 +80,9 @@ export function OnboardingProfileScreen({
           name: name.trim(),
           birthDate,
           ageRange: toAgeRange(birthDate),
-          // TODO: BE ProfileOnboardingRequest 정리 후 제거.
-          uxMode: "STANDARD",
+          // uxMode 는 보내지 않는다. 백엔드가 빈 값을 STANDARD 로 처리하므로 동작은
+          // 같고, 사용자가 고른 적 없는 값을 "정해서 보냈다" 는 인상만 사라진다.
+          // 실제로 고르게 되면 그때 다시 보낸다 (#134).
           termsAccepted: true,
         }),
         headers: {
