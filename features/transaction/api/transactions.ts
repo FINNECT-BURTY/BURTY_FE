@@ -113,11 +113,20 @@ const categoryLabels: Readonly<Record<string, string>> = {
   TRANSPORT: "교통",
 };
 
-export function categoryLabel(item: TransactionItem): string {
-  if (!isCategoryTrusted(item)) return "";
-  const code = item.expenseCategoryCode ?? item.incomeCategoryCode;
+/**
+ * 카테고리 코드 하나를 한글 라벨로. 모르는 코드는 빈 문자열이다.
+ *
+ * <p>예산 화면도 같은 코드 체계를 쓰므로 라벨 표를 두 곳에 두지 않으려고 꺼내 두었다.
+ * 표가 갈라지면 같은 코드가 화면마다 다르게 읽힌다.
+ */
+export function categoryCodeLabel(code: string | null | undefined): string {
   if (!code) return "";
   return categoryLabels[code.toUpperCase()] ?? "";
+}
+
+export function categoryLabel(item: TransactionItem): string {
+  if (!isCategoryTrusted(item)) return "";
+  return categoryCodeLabel(item.expenseCategoryCode ?? item.incomeCategoryCode);
 }
 
 /** 날짜별로 묶는다. 목록이 길어지면 언제 쓴 돈인지가 먼저 필요하다. */
