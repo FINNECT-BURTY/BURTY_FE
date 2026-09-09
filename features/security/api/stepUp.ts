@@ -15,10 +15,10 @@ type BiometricAuth = Readonly<{
 }>;
 
 /**
- * 이체에 필요한 LEVEL_3 단계 인증 결과.
+ * LEVEL_3 단계 인증 결과.
  *
- * <p>`riskProof` 는 `X-Risk-Proof` 헤더로, `assertionToken` 은 본문으로 보낸다. 서버는 둘을
- * 각각 다른 목적으로 본다 — 앞은 단계 인증 증명, 뒤는 이체 요청에 묶인 서명이다.
+ * <p>`riskProof` 는 `X-Risk-Proof` 헤더로 보내는 단계 인증 증명이다. `assertionToken` 은
+ * 요청 본문에 묶어 보내는 서명으로, 이체처럼 요청 자체에 서명이 필요한 곳에서만 쓴다.
  */
 export type StepUpResult = Readonly<{
   assertionToken: string;
@@ -56,12 +56,15 @@ export function describeStepUpError(error: unknown): string {
 }
 
 /**
- * 이체 직전 생체인증.
+ * 생체인증으로 LEVEL_3 증명을 받는다.
+ *
+ * <p>이체, 회원 탈퇴처럼 되돌릴 수 없는 동작 직전에 부른다. LEVEL_3 증명은 LEVEL_2 가
+ * 필요한 곳에서도 통하므로(백엔드 `RiskProofService.isAllowedFor`) 한 번 받으면 된다.
  *
  * <p>서버가 챌린지를 발급하고, 기기가 서명하고, 서버가 검증해 증명을 준다. 챌린지는
  * 서버가 준 것을 그대로 쓴다 — 클라이언트가 만든 값으로 서명하면 재생 공격을 막을 수 없다.
  */
-export async function stepUpForTransfer(userId: string): Promise<StepUpResult> {
+export async function stepUpWithBiometrics(userId: string): Promise<StepUpResult> {
   const challenge = await fetchApiData<Challenge>(
     "/api/v1/security/webauthn/authenticate/begin",
     {

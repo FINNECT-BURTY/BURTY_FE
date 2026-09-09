@@ -5,8 +5,8 @@ import { useCallback, useMemo, useState } from "react";
 
 import {
   describeStepUpError,
-  stepUpForTransfer,
-} from "@/features/transfer/api/stepUp";
+  stepUpWithBiometrics,
+} from "@/features/security";
 import {
   classifyTransfer,
   executeTransfer,
@@ -70,7 +70,7 @@ export function TransferFormScreen() {
 
     try {
       // 이체는 LEVEL_3 다. 생체인증을 통과해야 증명이 나온다.
-      const stepUp = await stepUpForTransfer(user.userId ?? "");
+      const stepUp = await stepUpWithBiometrics(user.userId ?? "");
 
       const transfer = await executeTransfer({
         amount,
