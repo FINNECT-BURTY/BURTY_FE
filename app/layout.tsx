@@ -41,22 +41,16 @@ export const metadata: Metadata = {
     title: APP_NAME,
     description: APP_DESCRIPTION,
     url: "/",
-    images: [
-      {
-        url: "/icons/icon-512x512.png",
-        width: 512,
-        height: 512,
-        alt: APP_NAME,
-      },
-    ],
+    // images 는 app/opengraph-image.tsx 가 채운다. 여기 또 적으면 카드에 두 장이
+    // 실리고, 규격이 어긋난 쪽이 먼저 잡힐 수 있다.
   },
   // 카드에 계좌·잔액 같은 값이 실리지 않게 요약만 둔다. 링크는 공유되는 순간
   // 어디로 갈지 알 수 없다.
   twitter: {
-    card: "summary",
+    // 1200x630 이미지를 그리므로 큰 카드로 둔다. summary 는 정사각 썸네일용이다.
+    card: "summary_large_image",
     title: APP_NAME,
     description: APP_DESCRIPTION,
-    images: ["/icons/icon-512x512.png"],
   },
   formatDetection: {
     telephone: false,
