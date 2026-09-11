@@ -6,6 +6,10 @@ export type AssetSummary = Readonly<{
   totalAsset: number;
   monthlySpend: number;
   volatilityPercent: number;
+  /** 0 이면 금액은 "0원" 이 아니라 "모름" 이다. 옛 백엔드는 이 값을 주지 않는다. */
+  linkedInstitutionCount?: number;
+  /** 조회에 실패해 합계에서 빠진 기관 수. */
+  failedInstitutionCount?: number;
 }>;
 
 /** `GET /api/v1/cashflow/risk` — 백엔드 `RiskAssessmentResponse`. */
@@ -89,4 +93,23 @@ export function deriveDailySpendable(
     remainingDays,
     usable: Math.max(usable, 0),
   };
+}
+
+export type AssetState =
+  | Readonly<{ kind: "unknown" }>
+  | Readonly<{ kind: "unlinked" }>
+  | Readonly<{ kind: "linked"; partial: boolean }>;
+
+/**
+ * 자산 요약을 화면 상태로.
+ *
+ * <p>연결하지 않은 사용자의 총자산은 0 이지만 "0원" 이 아니라 "모름" 이다. 0원이라고 보여주면
+ * 자산이 없다고 읽힌다. 예전에는 연결하지 않아도 모든 사용자에게 같은 고정값이 보였다.
+ *
+ * <p>연동 수를 주지 않는 옛 백엔드는 연결된 것으로 본다 — 그때까지의 동작을 바꾸지 않는다.
+ */
+export function describeAssetState(assets: AssetSummary | null): AssetState {
+  if (!assets) return { kind: "unknown" };
+  if (assets.linkedInstitutionCount === 0) return { kind: "unlinked" };
+  return { kind: "linked", partial: (assets.failedInstitutionCount ?? 0) > 0 };
 }
