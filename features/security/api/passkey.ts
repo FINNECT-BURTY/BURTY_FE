@@ -1,4 +1,4 @@
-import { fetchApiData } from "@/shared/api/apiResponse";
+import { ApiError, fetchApiData } from "@/shared/api/apiResponse";
 
 /** `POST /security/webauthn/register/begin` — 백엔드 `ChallengeResponse`. */
 type Challenge = Readonly<{ challengeId: string }>;
@@ -21,6 +21,9 @@ export type PasskeyRegistration = Readonly<{
 /** 등록 응답을 기다리는 최대 시간. 넘으면 사용자에게 손을 돌려준다. */
 const REGISTER_TIMEOUT_MS = 60_000;
 
+/** 백엔드 `ErrorCode.PASSKEY_UNAVAILABLE` — 자격증명을 저장할 수 없는 계정(데모 세션). */
+const PASSKEY_UNAVAILABLE_CODE = "2005";
+
 export class PasskeyError extends Error {
   readonly reason:
     | "cancelled"
@@ -28,6 +31,7 @@ export class PasskeyError extends Error {
     | "failed"
     | "rejected"
     | "timeout"
+    | "unavailable"
     | "unsupported";
 
   constructor(reason: PasskeyError["reason"], message: string) {
@@ -49,6 +53,8 @@ export function describePasskeyError(error: unknown): string {
       return "등록이 확인되지 않았어요. 잠시 후 다시 시도해 주세요";
     case "timeout":
       return "시간 안에 완료되지 않았어요. 다시 시도해 주세요";
+    case "unavailable":
+      return "이 계정에서는 패스키를 등록할 수 없어요";
     case "unsupported":
       return "이 기기에서는 패스키를 쓸 수 없어요";
     default:
@@ -91,7 +97,14 @@ export async function registerPasskey(
       headers: { "Content-Type": "application/json" },
       method: "POST",
     },
-  ).catch(() => null);
+  ).catch((error: unknown) => {
+    // 등록이 애초에 불가능한 계정은 생체인증을 띄우기 전에 그 이유를 알린다.
+    // 기기까지 가면 인증기가 거부한 것과 구분되지 않는 실패로 끝난다.
+    if (error instanceof ApiError && error.errorCode === PASSKEY_UNAVAILABLE_CODE) {
+      throw new PasskeyError("unavailable", error.message);
+    }
+    return null;
+  });
 
   if (!challenge?.challengeId) {
     throw new PasskeyError("failed", "챌린지를 받지 못했습니다");
