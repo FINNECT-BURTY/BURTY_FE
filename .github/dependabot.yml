@@ -1,0 +1,18 @@
+version: 2
+updates:
+  # 운영 의존성 취약점을 몰랐던 것은 이 설정이 없어서였다 (next critical 등 4건).
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  # 베이스 이미지(node)의 CVE 패치를 받아온다.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
