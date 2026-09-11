@@ -1,5 +1,6 @@
 import type { CashflowSchedule } from "@/features/finance/api/assetFlow";
 import { requestLevel2Proof } from "@/features/security/api/riskProof";
+import { stepUpWithBiometrics } from "@/features/security/api/stepUp";
 import { fetchApiData, fetchApiList } from "@/shared/api/apiResponse";
 
 /** `GET /api/v1/mydata/institutions` — 백엔드 `InstitutionResponse`. */
@@ -111,22 +112,43 @@ export async function fetchSecurity(): Promise<SecurityData> {
     fetchApiList<UserDevice>("/api/v1/devices").catch(
       () => [] as readonly UserDevice[],
     ),
-    fetchApiList<UserSession>("/api/v1/sessions").catch(
-      () => [] as readonly UserSession[],
-    ),
+    fetchSessions().catch(() => [] as readonly UserSession[]),
   ]);
 
   return { devices, sessions };
 }
 
-export function revokeSession(sessionId: string): Promise<unknown> {
+/**
+ * 로그인 세션 목록. 백엔드가 LEVEL_2 단계 인증을 요구한다.
+ *
+ * <p>예전에는 증명 없이 불러 403 을 받았고, 실패를 빈 목록으로 삼켜 세션이 항상 0개로 보였다.
+ */
+async function fetchSessions(): Promise<readonly UserSession[]> {
+  const riskProof = await requestLevel2Proof();
+  return fetchApiList<UserSession>("/api/v1/sessions", {
+    headers: { "X-Risk-Proof": riskProof },
+  });
+}
+
+/** 세션 하나를 끊는다. 백엔드가 LEVEL_2 단계 인증을 요구한다. */
+export async function revokeSession(sessionId: string): Promise<unknown> {
+  const riskProof = await requestLevel2Proof();
   return fetchApiData<unknown>(
     `/api/v1/sessions/${encodeURIComponent(sessionId)}`,
-    { method: "DELETE" },
+    { headers: { "X-Risk-Proof": riskProof }, method: "DELETE" },
   );
 }
 
-/** 현재 기기를 포함한 모든 세션을 끊는다. 기기를 잃어버렸을 때 쓰는 기능이다. */
-export function revokeAllSessions(): Promise<unknown> {
-  return fetchApiData<unknown>("/api/v1/sessions", { method: "DELETE" });
+/**
+ * 현재 기기를 포함한 모든 세션을 끊는다. 기기를 잃어버렸을 때 쓰는 기능이다.
+ *
+ * <p>되돌릴 수 없는 동작이라 백엔드가 LEVEL_3 를 요구한다. 생체 단계 인증으로 증명을 받는다.
+ * 예전에는 증명 없이 보내 항상 403 으로 막혔다.
+ */
+export async function revokeAllSessions(userId: string): Promise<unknown> {
+  const { riskProof } = await stepUpWithBiometrics(userId);
+  return fetchApiData<unknown>("/api/v1/sessions", {
+    headers: { "X-Risk-Proof": riskProof },
+    method: "DELETE",
+  });
 }

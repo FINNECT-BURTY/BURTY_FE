@@ -1,3 +1,4 @@
+import { requestLevel2Proof } from "@/features/security/api/riskProof";
 import { fetchApiData, fetchApiList } from "@/shared/api/apiResponse";
 
 /** `GET /api/v1/settings/limits` — 백엔드 `LimitResponse`. */
@@ -94,12 +95,23 @@ export async function fetchTransferOverview(): Promise<TransferOverview> {
     fetchApiList<Transfer>("/api/v1/transfers").catch(
       () => [] as readonly Transfer[],
     ),
-    fetchApiList<RegisteredAccount>("/api/v1/registered-accounts").catch(
-      () => [] as readonly RegisteredAccount[],
-    ),
+    fetchRegisteredAccounts().catch(() => [] as readonly RegisteredAccount[]),
   ]);
 
   return { accounts, limit, transfers };
+}
+
+/**
+ * 등록 계좌 목록. 백엔드가 LEVEL_2 단계 인증을 요구한다.
+ *
+ * <p>예전에는 증명 없이 불러 403 을 받았고, 실패를 빈 목록으로 삼켜 이체 화면의 등록 계좌가
+ * 항상 비어 보였다.
+ */
+async function fetchRegisteredAccounts(): Promise<readonly RegisteredAccount[]> {
+  const riskProof = await requestLevel2Proof();
+  return fetchApiList<RegisteredAccount>("/api/v1/registered-accounts", {
+    headers: { "X-Risk-Proof": riskProof },
+  });
 }
 
 // ── 실행 ──────────────────────────────────────────────────────────────────

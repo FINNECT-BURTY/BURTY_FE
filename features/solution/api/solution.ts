@@ -1,4 +1,5 @@
 import type { RiskCause } from "@/features/finance/api/riskDetail";
+import { requestLevel2Proof } from "@/features/security/api/riskProof";
 import { fetchApiData, fetchApiList } from "@/shared/api/apiResponse";
 
 /** `GET /api/v1/cashflow/action` — 백엔드 `ActionRecommendationResponse`. */
@@ -51,9 +52,12 @@ export async function fetchSolution(): Promise<SolutionData> {
 export async function executeAction(
   actionType: string,
 ): Promise<ActionExecution | null> {
+  // 백엔드가 LEVEL_2 단계 인증을 요구한다. 예전에는 증명 없이 보내 항상 403 으로 막혔고,
+  // 화면에는 로그인이 끊긴 것처럼 보였다.
+  const riskProof = await requestLevel2Proof();
   return fetchApiData<ActionExecution>("/api/v1/cashflow/action/execute", {
     body: JSON.stringify({ actionType }),
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "X-Risk-Proof": riskProof },
     method: "POST",
   });
 }

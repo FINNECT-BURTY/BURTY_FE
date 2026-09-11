@@ -1,10 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   classifyTransfer,
+  fetchTransferOverview,
   isAwaitingApproval,
   transferOutcomeDescription,
 } from "@/features/transfer/api/transfer";
+import { fetchApiData, fetchApiList } from "@/shared/api/apiResponse";
+
+vi.mock("@/shared/api/apiResponse", () => ({
+  fetchApiData: vi.fn(),
+  fetchApiList: vi.fn(),
+}));
 
 /**
  * 이체 결과 분류.
@@ -66,5 +73,44 @@ describe("isAwaitingApproval", () => {
     expect(isAwaitingApproval("AWAITING_APPROVAL")).toBe(true);
     expect(isAwaitingApproval("PENDING")).toBe(false);
     expect(isAwaitingApproval(null)).toBe(false);
+  });
+});
+
+/**
+ * 등록 계좌 조회는 LEVEL_2 다.
+ *
+ * <p>예전에는 증명 없이 불러 403 을 받았고, 실패를 빈 목록으로 삼켜 이체 화면의 등록 계좌가
+ * 항상 비어 보였다 (#155).
+ */
+describe("fetchTransferOverview", () => {
+  beforeEach(() => {
+    vi.mocked(fetchApiData).mockReset();
+    vi.mocked(fetchApiList).mockReset();
+  });
+
+  it("등록 계좌는 LEVEL_2 증명을 실어 조회한다", async () => {
+    vi.mocked(fetchApiData).mockImplementation(async (path) =>
+      path === "/api/v1/security/level2/proof" ? { riskProof: "proof-2" } : null,
+    );
+    vi.mocked(fetchApiList).mockResolvedValue([]);
+
+    await fetchTransferOverview();
+
+    expect(fetchApiList).toHaveBeenCalledWith("/api/v1/registered-accounts", {
+      headers: { "X-Risk-Proof": "proof-2" },
+    });
+  });
+
+  it("증명을 받지 못하면 등록 계좌를 비워 두고 나머지는 보여준다", async () => {
+    vi.mocked(fetchApiData).mockResolvedValue(null);
+    vi.mocked(fetchApiList).mockResolvedValue([]);
+
+    const overview = await fetchTransferOverview();
+
+    expect(overview.accounts).toEqual([]);
+    expect(fetchApiList).not.toHaveBeenCalledWith(
+      "/api/v1/registered-accounts",
+      expect.anything(),
+    );
   });
 });
