@@ -1,7 +1,7 @@
 import { fetchApiData } from "@/shared/api/apiResponse";
 
-/** `POST /api/v1/security/level2/proof` — 백엔드 `RiskProofResponse`. */
-type RiskProofResponse = Readonly<{ riskProof?: string | null }>;
+// LEVEL_2 증명은 연동 해제도 쓴다. 보안 모듈 한 곳에 두고 여기서는 다시 내보낸다.
+export { requestLevel2Proof } from "@/features/security/api/riskProof";
 
 /** `DELETE /api/v1/privacy/me` — 백엔드 `WithdrawResponse`. */
 export type WithdrawResult = Readonly<{
@@ -20,24 +20,6 @@ export type PersonalDataExport = Readonly<Record<string, unknown>>;
  * 필요해 여기서 다루지 않는다. 목록을 늘리기 전에 백엔드부터 확인해야 한다.
  */
 export const RECTIFIABLE_FIELDS = [{ field: "name", label: "이름" }] as const;
-
-/**
- * 생체인증 없이 받는 LEVEL_2 증명.
- *
- * <p>열람·정정은 LEVEL_2 면 된다. 탈퇴는 LEVEL_3 이라 생체인증을 따로 거친다.
- */
-export async function requestLevel2Proof(): Promise<string> {
-  const result = await fetchApiData<RiskProofResponse>(
-    "/api/v1/security/level2/proof",
-    { method: "POST" },
-  );
-
-  if (!result?.riskProof) {
-    throw new Error("본인확인에 실패했습니다");
-  }
-
-  return result.riskProof;
-}
 
 export function exportPersonalData(
   riskProof: string,
