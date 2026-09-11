@@ -9,6 +9,8 @@ import {
   type UserDevice,
 } from "@/features/mypage/api/settings";
 import { SettingsScreenShell } from "@/features/mypage/ui/SettingsScreenShell";
+import { describeStepUpError, StepUpError } from "@/features/security";
+import { useCurrentUser } from "@/shared/auth/currentUser";
 import {
   clearAuthTokens,
   clearSessionMarker,
@@ -20,6 +22,7 @@ import { StaleNotice } from "@/shared/ui/StateMessage";
 
 export function SecurityScreen() {
   const router = useRouter();
+  const { user } = useCurrentUser();
 
   const fetcher = useCallback(() => fetchSecurity(), []);
   const { data, error, isInitialLoading, refetch } = useBackendQuery(fetcher);
@@ -38,13 +41,18 @@ export function SecurityScreen() {
     setRevokeError(null);
 
     try {
-      await revokeAllSessions();
+      // 되돌릴 수 없는 동작이라 백엔드가 LEVEL_3 를 요구한다. 생체 단계 인증을 거친다.
+      await revokeAllSessions(user?.userId ?? "");
       // 모든 세션을 끊었으므로 현재 기기도 로그아웃 상태다. 남은 토큰을 지우고 나간다.
       clearAuthTokens();
       clearSessionMarker();
       router.replace("/onboarding?step=entry");
-    } catch {
-      setRevokeError("로그아웃에 실패했어요. 잠시 후 다시 시도해주세요");
+    } catch (cause) {
+      setRevokeError(
+        cause instanceof StepUpError
+          ? describeStepUpError(cause)
+          : "로그아웃에 실패했어요. 잠시 후 다시 시도해주세요",
+      );
       setIsRevoking(false);
       setIsConfirmOpen(false);
     }
