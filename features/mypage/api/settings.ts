@@ -1,4 +1,5 @@
 import type { CashflowSchedule } from "@/features/finance/api/assetFlow";
+import { requestLevel2Proof } from "@/features/security/api/riskProof";
 import { fetchApiData, fetchApiList } from "@/shared/api/apiResponse";
 
 /** `GET /api/v1/mydata/institutions` — 백엔드 `InstitutionResponse`. */
@@ -42,10 +43,17 @@ export function fetchLinkedInstitutions(): Promise<
   return fetchApiList<LinkedInstitution>("/api/v1/mydata/institutions");
 }
 
-export function unlinkInstitution(institutionCode: string): Promise<unknown> {
+/**
+ * 연동 해제. 백엔드가 LEVEL_2 단계 인증을 요구한다.
+ *
+ * <p>예전에는 증명 없이 보내 403 으로 막혔고, 화면에는 "연동 해제에 실패했어요" 만 떴다.
+ * 해제는 정보주체가 수집을 멈추는 수단이라 막히면 안 된다.
+ */
+export async function unlinkInstitution(institutionCode: string): Promise<unknown> {
+  const riskProof = await requestLevel2Proof();
   return fetchApiData<unknown>(
     `/api/v1/mydata/institutions/${encodeURIComponent(institutionCode)}`,
-    { method: "DELETE" },
+    { headers: { "X-Risk-Proof": riskProof }, method: "DELETE" },
   );
 }
 

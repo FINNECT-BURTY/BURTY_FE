@@ -1,3 +1,4 @@
+export { requestLevel2Proof } from "@/features/security/api/riskProof";
 export {
   describeStepUpError,
   StepUpError,

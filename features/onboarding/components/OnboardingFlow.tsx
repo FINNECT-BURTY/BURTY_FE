@@ -74,7 +74,8 @@ export function OnboardingFlow() {
 
   const handleOnboardingComplete = () => {
     markSkipStartupSplash();
-    window.location.replace("/");
+    // 온보딩의 마지막은 "연결하기" 다. 예전에는 홈으로 보내 아무것도 연결되지 않았다.
+    window.location.replace("/mypage/institutions?from=onboarding");
   };
 
   if (view === "entry") {

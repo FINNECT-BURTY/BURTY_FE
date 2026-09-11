@@ -1,11 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
 import {
+  type AssetSummary,
   deriveDailySpendable,
+  describeAssetState,
   fetchHomeOverview,
 } from "@/features/home/api/homeOverview";
 import { useCurrentUser } from "@/shared/auth/currentUser";
@@ -58,6 +61,8 @@ export function HomeScreen() {
   // 성공한 카드를 그대로 두고 해당 카드에서만 알린다.
   const allFailed = !isInitialLoading && !assets && !forecast && !risk;
 
+  const assetState = describeAssetState(assets);
+
   return (
     <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-main-background text-grayscale-1000">
       <MainHeader />
@@ -82,7 +87,7 @@ export function HomeScreen() {
               <Skeleton className="mt-2 h-5 w-40" />
             ) : (
               <p className="text-body-md mt-1 text-grayscale-900">
-                {describeMonthlySpend(assets?.monthlySpend)}
+                {describeMonthlySpend(assets)}
               </p>
             )}
           </div>
@@ -226,9 +231,25 @@ export function HomeScreen() {
           {isInitialLoading ? (
             <Skeleton className="h-5 w-24" />
           ) : (
-            <p className="text-title-sm tabular-nums shrink-0 text-grayscale-900">
-              {assets ? formatWon(assets.totalAsset) : "-"}
-            </p>
+            assetState.kind === "unlinked" ? (
+              // 연결하지 않았으면 0원이 아니라 모름이다. 0원이라고 쓰면 자산이 없다고 읽힌다.
+              <Link
+                className="text-title-sm shrink-0 text-grayscale-900 underline underline-offset-4"
+                href="/mypage/institutions"
+              >
+                연결하기
+              </Link>
+            ) : (
+              <p className="text-title-sm tabular-nums shrink-0 text-grayscale-900">
+                {assets ? formatWon(assets.totalAsset) : "-"}
+                {assetState.kind === "linked" && assetState.partial ? (
+                  // 일부 기관이 빠진 합계를 전체처럼 보여주지 않는다.
+                  <span className="text-caption ml-1 text-grayscale-600">
+                    일부 기관 제외
+                  </span>
+                ) : null}
+              </p>
+            )
           )}
         </section>
 
@@ -243,7 +264,11 @@ export function HomeScreen() {
   );
 }
 
-function describeMonthlySpend(monthlySpend: number | undefined): string {
+function describeMonthlySpend(assets: AssetSummary | null): string {
+  if (describeAssetState(assets).kind === "unlinked") {
+    return "자산을 연결하면 이번 달 지출을 알려드려요";
+  }
+  const monthlySpend = assets?.monthlySpend;
   if (monthlySpend === undefined || monthlySpend <= 0) {
     return "오늘도 버티와 함께 관리해요";
   }
