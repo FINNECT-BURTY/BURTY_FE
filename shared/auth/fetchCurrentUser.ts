@@ -6,7 +6,7 @@ import {
   clearAuthTokens,
   getAccessToken,
   getRefreshToken,
-  setAuthTokens,
+  restoreAuthTokens,
 } from "@/shared/auth/tokenStorage";
 
 type CurrentUserResponse = Readonly<{
@@ -142,7 +142,8 @@ async function fetchNameFromApi() {
  * 화면 전체가 미인증이 됐다. 프로필 행이 없는 계정에서 홈이 통째로 "불러오지 못했어요" 가
  * 되는 형태로 드러났다.
  *
- * <p>쿠키 세션으로 다시 맞추는 시도는 남기되, 실패하면 원래 토큰을 되돌린다.
+ * <p>쿠키 세션으로 다시 맞추는 시도는 남기되, 실패하면 원래 토큰을 있던 그대로 되돌린다.
+ * 한 쌍일 때만 되돌리면 refresh 토큰이 없는 세션(테스트 토큰)은 여기서 access 토큰을 잃는다.
  */
 async function fetchDisplayNameFromNameEndpoint(userId?: string) {
   try {
@@ -151,20 +152,17 @@ async function fetchDisplayNameFromNameEndpoint(userId?: string) {
     const name = await fetchNameFromApi();
     if (name) return name;
 
-    const savedAccessToken = getAccessToken();
-    const savedRefreshToken = getRefreshToken();
+    const savedTokens = {
+      accessToken: getAccessToken(),
+      refreshToken: getRefreshToken(),
+    };
 
     // Bearer 가 남아 있으나 쿠키 세션과 어긋난 경우를 한 번 더 시도한다.
     clearAuthTokens();
     const rehydrated = await hydrateAuthTokensFromCookieSession();
 
     if (!rehydrated) {
-      if (savedAccessToken && savedRefreshToken) {
-        setAuthTokens({
-          accessToken: savedAccessToken,
-          refreshToken: savedRefreshToken,
-        });
-      }
+      restoreAuthTokens(savedTokens);
       return null;
     }
 

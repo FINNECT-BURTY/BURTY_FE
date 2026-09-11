@@ -67,6 +67,34 @@ export function clearAuthTokens() {
   }
 }
 
+/**
+ * 저장해 둔 값을 있던 그대로 되돌린다.
+ *
+ * `setAuthTokens` 는 한 쌍을 요구한다. refresh 토큰이 없던 세션(테스트 토큰)을 그것으로 되돌리려면
+ * 없던 값을 만들어 넣거나 되돌리기를 포기해야 한다. 없던 쪽은 없는 그대로 둔다.
+ */
+export function restoreAuthTokens(
+  tokens: Readonly<{ accessToken: string | null; refreshToken: string | null }>,
+) {
+  const storage = safeLocalStorage();
+  if (!storage) return;
+
+  try {
+    restoreItem(storage, ACCESS_TOKEN_KEY, tokens.accessToken);
+    restoreItem(storage, REFRESH_TOKEN_KEY, tokens.refreshToken);
+  } catch {
+    // noop
+  }
+}
+
+function restoreItem(storage: Storage, key: string, value: string | null) {
+  if (value === null) {
+    storage.removeItem(key);
+  } else {
+    storage.setItem(key, value);
+  }
+}
+
 export function hasAuthTokens(): boolean {
   return getAccessToken() !== null && getRefreshToken() !== null;
 }
