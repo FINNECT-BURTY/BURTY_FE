@@ -16,9 +16,13 @@ export type ApiEnvelope<T> = Readonly<{
 /** 화면이 구분해서 다뤄야 하는 실패 원인. */
 export type ApiFailureReason =
   | "network"
-  | "unauthorized"
   | "not-found"
-  | "server";
+  | "server"
+  | "step-up"
+  | "unauthorized";
+
+/** 백엔드 `ErrorCode.STEP_UP_REQUIRED` — 단계 인증(추가 본인확인)이 필요하다는 뜻. */
+const STEP_UP_REQUIRED_CODE = "2006";
 
 export class ApiError extends Error {
   readonly reason: ApiFailureReason;
@@ -38,7 +42,13 @@ export class ApiError extends Error {
   }
 }
 
-function reasonFromStatus(status: number): ApiFailureReason {
+function reasonFromStatus(
+  status: number,
+  errorCode?: string,
+): ApiFailureReason {
+  // 단계 인증이 모자란 것은 로그인이 끊긴 것과 다르다. 같은 403 이라 구분하지 않으면
+  // "다시 로그인해주세요" 가 떠서 원인을 가린다 — 연동 해제와 세션 관리가 그랬다.
+  if (errorCode === STEP_UP_REQUIRED_CODE) return "step-up";
   if (status === 401 || status === 403) return "unauthorized";
   if (status === 404) return "not-found";
   return "server";
@@ -58,10 +68,12 @@ export function describeApiError(error: unknown): string {
   switch (error.reason) {
     case "network":
       return "네트워크 연결을 확인해주세요";
-    case "unauthorized":
-      return "다시 로그인해주세요";
     case "not-found":
       return "아직 준비된 정보가 없어요";
+    case "step-up":
+      return "본인 확인이 필요해요";
+    case "unauthorized":
+      return "다시 로그인해주세요";
     default:
       return "잠시 후 다시 시도해주세요";
   }
@@ -92,7 +104,7 @@ export async function fetchApiData<T>(
 
   if (!response.ok) {
     throw new ApiError(
-      reasonFromStatus(response.status),
+      reasonFromStatus(response.status, payload?.errorCode),
       payload?.message ?? "요청이 실패했습니다",
       { errorCode: payload?.errorCode, status: response.status },
     );
