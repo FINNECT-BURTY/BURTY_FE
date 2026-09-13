@@ -54,6 +54,24 @@ describe("fetchApiData", () => {
     await expect(fetchApiData("/x")).rejects.toMatchObject({ reason: "unauthorized" });
   });
 
+  it("단계 인증이 필요한 403 은 로그인 만료와 구분한다", async () => {
+    // 구분하지 않으면 "다시 로그인해주세요" 가 떠서, 멀쩡한 로그인에 사용자가
+    // 다시 로그인하려 든다. 연동 해제와 세션 관리 결함이 이 문구에 가려져 있었다.
+    mocked.mockResolvedValue(
+      response(403, {
+        success: false,
+        errorCode: "2006",
+        message: "추가 본인확인이 필요합니다",
+      }),
+    );
+    await expect(fetchApiData("/x")).rejects.toMatchObject({ reason: "step-up" });
+  });
+
+  it("그 밖의 403 은 여전히 로그인 문제로 본다", async () => {
+    mocked.mockResolvedValue(response(403, { success: false }));
+    await expect(fetchApiData("/x")).rejects.toMatchObject({ reason: "unauthorized" });
+  });
+
   it("404 는 not-found 로 분류한다", async () => {
     mocked.mockResolvedValue(response(404, { success: false }));
     await expect(fetchApiData("/x")).rejects.toMatchObject({ reason: "not-found" });
@@ -89,6 +107,13 @@ describe("describeApiError", () => {
   it("원인별로 사용자가 할 수 있는 행동을 알려준다", () => {
     expect(describeApiError(new ApiError("network", ""))).toContain("네트워크");
     expect(describeApiError(new ApiError("unauthorized", ""))).toContain("로그인");
+  });
+
+  it("단계 인증은 로그인과 다른 안내를 준다", () => {
+    // 로그인은 멀쩡한데 "다시 로그인해주세요" 가 뜨면 사용자가 엉뚱한 일을 한다.
+    const message = describeApiError(new ApiError("step-up", ""));
+    expect(message).toContain("본인 확인");
+    expect(message).not.toContain("로그인");
   });
 
   it("ApiError 가 아닌 값도 안전하게 처리한다", () => {
