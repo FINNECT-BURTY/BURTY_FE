@@ -17,9 +17,13 @@ export type AgreementView =
   | Readonly<{ type: "list" }>
   | Readonly<{ type: "detail"; item: AgreementItem }>;
 
+/** 항목별 동의 여부. 화면에서만 쓰고 버리면 백엔드에 기록이 남지 않는다. */
+export type AgreementState = Readonly<Record<AgreementId, boolean>>;
+
 export type OnboardingAgreementScreenProps = Readonly<{
   onBackToEntry: () => void;
-  onComplete: () => void;
+  /** 동의한 항목을 그대로 넘긴다. 다음 단계(프로필 저장)가 이 값을 백엔드에 보낸다. */
+  onComplete: (agreements: AgreementState) => void;
 }>;
 
 export const agreementItems: readonly AgreementItem[] = [

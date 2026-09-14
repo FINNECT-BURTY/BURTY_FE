@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 
+import { profileRequestBody } from "@/features/onboarding/api/profile";
+import type { AgreementState } from "@/features/onboarding/constants/agreements";
 import { useBirthDateSelect } from "@/features/onboarding/hooks/useBirthDateSelect";
 import {
   birthMonthOptions,
@@ -29,6 +31,8 @@ type ProfileResponse = Readonly<{
 }>;
 
 type OnboardingProfileScreenProps = Readonly<{
+  /** 동의 화면에서 받은 항목별 동의. 프로필 저장 요청에 그대로 실어 보낸다. */
+  agreements: AgreementState;
   onBack: () => void;
   onComplete: () => void;
 }>;
@@ -38,6 +42,7 @@ function onlyDigits(value: string) {
 }
 
 export function OnboardingProfileScreen({
+  agreements,
   onBack,
   onComplete,
 }: OnboardingProfileScreenProps) {
@@ -75,16 +80,15 @@ export function OnboardingProfileScreen({
 
     try {
       const response = await backendFetch("/api/v1/onboarding/profile", {
-        body: JSON.stringify({
-          phone: normalizedPhone,
-          name: name.trim(),
-          birthDate,
-          ageRange: toAgeRange(birthDate),
-          // uxMode 는 보내지 않는다. 백엔드가 빈 값을 STANDARD 로 처리하므로 동작은
-          // 같고, 사용자가 고른 적 없는 값을 "정해서 보냈다" 는 인상만 사라진다.
-          // 실제로 고르게 되면 그때 다시 보낸다 (#134).
-          termsAccepted: true,
-        }),
+        body: JSON.stringify(
+          profileRequestBody({
+            agreements,
+            ageRange: toAgeRange(birthDate),
+            birthDate,
+            name: name.trim(),
+            phone: normalizedPhone,
+          }),
+        ),
         headers: {
           "Content-Type": "application/json",
         },
