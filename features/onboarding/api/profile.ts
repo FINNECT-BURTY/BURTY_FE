@@ -13,6 +13,7 @@ export type ProfileRequestBody = Readonly<{
   creditTransferAccepted: boolean;
   marketingAccepted: boolean;
   benefitAccepted: boolean;
+  overseasTransferAccepted: boolean;
 }>;
 
 /**
@@ -43,6 +44,7 @@ export function profileRequestBody(
     creditTransferAccepted: input.agreements.creditTransfer,
     marketingAccepted: input.agreements.marketing,
     name: input.name,
+    overseasTransferAccepted: input.agreements.overseasTransfer,
     phone: input.phone,
     privacyAccepted: input.agreements.privacy,
     termsAccepted: input.agreements.service,

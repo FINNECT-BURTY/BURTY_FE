@@ -9,6 +9,7 @@ function agreements(overrides: Partial<AgreementState> = {}): AgreementState {
     creditCollection: true,
     creditTransfer: true,
     marketing: true,
+    overseasTransfer: true,
     privacy: true,
     service: true,
     ...overrides,
@@ -37,9 +38,20 @@ describe("profileRequestBody", () => {
       creditCollectionAccepted: true,
       creditTransferAccepted: true,
       marketingAccepted: true,
+      overseasTransferAccepted: true,
       privacyAccepted: true,
       termsAccepted: true,
     });
+  });
+
+  it("국외 이전에 동의하지 않으면 false 로 보낸다", () => {
+    // 이 값이 기록되지 않으면 운영에서 AI 상담·음성이 막힌다.
+    const body = profileRequestBody({
+      ...profile,
+      agreements: agreements({ overseasTransfer: false }),
+    });
+
+    expect(body.overseasTransferAccepted).toBe(false);
   });
 
   it("동의하지 않은 선택 항목은 false 로 보낸다", () => {
