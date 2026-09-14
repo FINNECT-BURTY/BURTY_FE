@@ -64,8 +64,8 @@ function AxisTick({
 
   return (
     <text
+      className="chart-axis-tick"
       fill={isRiskDate ? "var(--red)" : "var(--grayscale-700)"}
-      fontSize="11"
       fontWeight={isRiskDate ? 600 : 400}
       textAnchor="middle"
       x={x}
@@ -188,7 +188,7 @@ export function AssetFlowChart({
           ? `${selectedRange.label} 일별 예상 잔액`
           : "이번 달 일별 예상 잔액 흐름"
       }
-      className={`${className} w-full overflow-hidden`}
+      className={`asset-flow-chart ${className} w-full overflow-hidden`}
     >
       {interactive && selectedRange ? (
         <div className="mb-2 flex justify-end">
@@ -283,7 +283,7 @@ export function AssetFlowChart({
                 ifOverflow="visible"
                 label={{
                   fill: "var(--red)",
-                  fontSize: 10,
+                  // 크기는 CSS(.asset-flow-chart text)가 정한다. 여기서 박으면 글자 배율을 타지 않는다.
                   // 안전선 라벨과 같은 쪽에 두면 두 선이 가까울 때 글자가 겹친다.
                   position: "insideBottomRight",
                   value: "0원",
@@ -300,7 +300,6 @@ export function AssetFlowChart({
                 ifOverflow="visible"
                 label={{
                   fill: "var(--grayscale-600)",
-                  fontSize: 10,
                   position: "insideTopLeft",
                   value: `안전 ${formatCompactWon(safetyBalance)}`,
                 }}
