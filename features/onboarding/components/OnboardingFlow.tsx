@@ -6,6 +6,7 @@ import { OnboardingAgreementScreen } from "@/features/onboarding/components/Onbo
 import { OnboardingEntry } from "@/features/onboarding/components/OnboardingEntry";
 import { OnboardingFunnel } from "@/features/onboarding/components/OnboardingFunnel";
 import { OnboardingProfileScreen } from "@/features/onboarding/components/OnboardingProfileScreen";
+import type { AgreementState } from "@/features/onboarding/constants/agreements";
 import { markSkipStartupSplash } from "@/shared/layout/startupSplash";
 
 const ONBOARDING_PATHNAME = "/onboarding";
@@ -44,6 +45,9 @@ function isOnboardingPathname() {
 
 export function OnboardingFlow() {
   const [view, setView] = useState<OnboardingScreenView>("entry");
+  // 동의 화면에서 받은 항목별 값을 프로필 저장까지 들고 간다. 예전에는 화면에서만 쓰고
+  // 버려서 백엔드에는 termsAccepted 하나만 갔고, 나머지 동의는 기록이 남지 않았다.
+  const [agreements, setAgreements] = useState<AgreementState | null>(null);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -82,20 +86,26 @@ export function OnboardingFlow() {
     return <OnboardingEntry />;
   }
 
-  if (view === "profile") {
+  if (view === "profile" && agreements) {
     return (
       <OnboardingProfileScreen
+        agreements={agreements}
         onBack={() => replaceOnboardingStep("agreement")}
         onComplete={() => replaceOnboardingStep("funnel")}
       />
     );
   }
 
-  if (view === "agreement") {
+  // 동의를 거치지 않고 프로필 단계로 바로 들어오면(주소 직접 입력 등) 동의부터 받는다.
+  // 받은 적 없는 동의를 만들어 보낼 수는 없다.
+  if (view === "agreement" || view === "profile") {
     return (
       <OnboardingAgreementScreen
         onBackToEntry={handleBackToEntry}
-        onComplete={() => replaceOnboardingStep("profile")}
+        onComplete={(agreed) => {
+          setAgreements(agreed);
+          replaceOnboardingStep("profile");
+        }}
       />
     );
   }

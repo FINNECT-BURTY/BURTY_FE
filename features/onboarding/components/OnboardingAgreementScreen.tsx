@@ -186,7 +186,9 @@ export function OnboardingAgreementScreen({
       <BottomActionBar
         actionLabel="동의하기"
         disabled={!requiredChecked}
-        onAction={onComplete}
+        // 동의한 항목을 그대로 넘긴다. 예전에는 화면에서만 쓰고 버려서, 백엔드에는
+        // 필수 약관 두 건만 기록되고 수집·이용·전송요구·마케팅 동의는 흔적이 없었다.
+        onAction={() => onComplete(agreements)}
       />
 
       {showExitDialog ? (
