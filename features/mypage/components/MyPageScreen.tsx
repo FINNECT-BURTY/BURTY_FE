@@ -128,6 +128,10 @@ export function MyPageScreen() {
       title: "계정 및 데이터",
     },
     {
+      items: [{ href: "/mypage/display", label: "글자 크기 및 화면" }],
+      title: "화면",
+    },
+    {
       items: [
         { href: "/mypage/security", label: "기기 및 로그인 관리" },
         { href: "/mypage/security/passkey", label: "패스키 등록" },
