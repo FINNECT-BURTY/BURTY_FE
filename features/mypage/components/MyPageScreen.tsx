@@ -123,6 +123,7 @@ export function MyPageScreen() {
         { href: "/mypage/institutions", label: "금융 연동 관리" },
         { href: "/mypage/schedules", label: "고정 지출 관리" },
         { href: "/mypage/privacy", label: "내 개인정보" },
+        { href: "/mypage/terms", label: "약관 및 정책" },
       ],
       title: "계정 및 데이터",
     },
