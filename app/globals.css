@@ -26,6 +26,10 @@
   --green: #20a940;
   --orange: #f96617;
 
+  /* 글자 배율. 시니어 사용자가 설정 화면에서 바꾸면 여기만 바뀌고 모든 타입 클래스가 함께 커진다.
+     px 를 화면마다 고쳐 키우면 커지지 않는 곳이 반드시 남는다 (#134). */
+  --font-scale: 1;
+
   --background: #fcfcfc;
   --main-background: #f6f7f7;
   --effect-shadow-1: 0 0 8px rgb(234 234 234 / 80%);
@@ -78,57 +82,60 @@ body {
   overflow: hidden;
 }
 
+/* 크기는 전부 --font-scale 을 거친다. line-height 는 % 라 배율을 따라 함께 늘어나고,
+   letter-spacing 은 원래 크기 기준 값이라 그대로 둔다 — 배율까지 곱하면 글자가 커질수록
+   자간만 과하게 벌어진다. */
 .text-display {
-  font-size: 22px;
+  font-size: calc(var(--font-scale) * 22px);
   font-weight: 700;
   line-height: 140%;
   letter-spacing: -0.22px;
 }
 
 .text-title-lg {
-  font-size: 20px;
+  font-size: calc(var(--font-scale) * 20px);
   font-weight: 600;
   line-height: 140%;
   letter-spacing: -0.4px;
 }
 
 .text-title-md {
-  font-size: 18px;
+  font-size: calc(var(--font-scale) * 18px);
   font-weight: 600;
   line-height: 140%;
   letter-spacing: -0.36px;
 }
 
 .text-title-sm {
-  font-size: 16px;
+  font-size: calc(var(--font-scale) * 16px);
   font-weight: 600;
   line-height: 140%;
   letter-spacing: -0.32px;
 }
 
 .text-title-xs {
-  font-size: 14px;
+  font-size: calc(var(--font-scale) * 14px);
   font-weight: 500;
   line-height: 150%;
   letter-spacing: -0.28px;
 }
 
 .text-body-lg {
-  font-size: 16px;
+  font-size: calc(var(--font-scale) * 16px);
   font-weight: 400;
   line-height: 150%;
   letter-spacing: -0.32px;
 }
 
 .text-body-md {
-  font-size: 14px;
+  font-size: calc(var(--font-scale) * 14px);
   font-weight: 400;
   line-height: 150%;
   letter-spacing: -0.28px;
 }
 
 .text-caption {
-  font-size: 12px;
+  font-size: calc(var(--font-scale) * 12px);
   font-weight: 400;
   line-height: 150%;
   letter-spacing: -0.24px;
