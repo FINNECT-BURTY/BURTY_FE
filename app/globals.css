@@ -141,6 +141,22 @@ body {
   letter-spacing: -0.24px;
 }
 
+/* 차트 안의 글자.
+
+   SVG 속성(fontSize="11")으로 크기를 박으면 --font-scale 을 타지 않는다. 하필 앱에서
+   가장 작은 글자인데다 안전잔액·위험일처럼 이 차트가 알려야 할 값이라, 글자를 키운
+   사용자에게도 10px 그대로 남아 있었다 (#134).
+
+   자식 text 를 통째로 겨냥한다. 차트 라이브러리가 기준선 라벨에 어떤 클래스를 붙이는지에
+   기대지 않기 위해서다. */
+.asset-flow-chart text {
+  font-size: calc(var(--font-scale) * 10px);
+}
+
+.asset-flow-chart .chart-axis-tick {
+  font-size: calc(var(--font-scale) * 11px);
+}
+
 /* 키보드 포커스 표시.
    여러 입력에 outline-none 이 걸려 있는데 대체 표시가 없어, 키보드·스위치 사용자가
    지금 어디에 있는지 알 수 없었다. 로그인 화면의 비밀번호 입력까지 그랬다.
